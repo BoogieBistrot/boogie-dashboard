@@ -209,8 +209,6 @@ exports.handler = async () => {
           'Pren. Sabato':                     perGiorno[6],
           'Pren. Domenica':                   perGiorno[0],
           'Clienti unici':                    clientiUnici,
-          'Preferenza pizza':                 prefPizza,
-          'Preferenza cucina':                prefCucina,
           'Prenotazioni last minute':         lastMinute,
           'Media coperti per giorno':         mediaCopertiGiorno,
         }

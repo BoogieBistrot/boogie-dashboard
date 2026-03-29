@@ -53,8 +53,6 @@ exports.handler = async (event) => {
       sabato:             r.fields['Pren. Sabato'] || 0,
       domenica:           r.fields['Pren. Domenica'] || 0,
       clientiUnici:       r.fields['Clienti unici'] || 0,
-      prefPizza:          r.fields['Preferenza pizza'] || 0,
-      prefCucina:         r.fields['Preferenza cucina'] || 0,
       lastMinute:         r.fields['Prenotazioni last minute'] || 0,
       mediaCopertiGiorno: r.fields['Media coperti per giorno'] || 0,
     }))

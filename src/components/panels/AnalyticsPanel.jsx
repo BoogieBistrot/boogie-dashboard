@@ -197,8 +197,6 @@ function VistaSettimana({ s, settimane }) {
             <InsightChip label="Slot meno richiesto"   value={s.slotMeno} />
             <InsightChip label="Fascia meno richiesta" value={s.fasciaMenoRichiesta} />
             <InsightChip label="Last minute"           value={`${s.lastMinute} pren.`} />
-            <InsightChip label="Preferenza pizza"      value={`${s.prefPizza} pren.`} />
-            <InsightChip label="Preferenza cucina"     value={`${s.prefCucina} pren.`} />
           </div>
         </div>
       </div>
@@ -242,8 +240,6 @@ function VistaGlobale({ settimane }) {
   const slotFrequente      = mode(settimane.map(s => s.slotPiu))
   const fasciaPocoRichiesta = mode(settimane.map(s => s.fasciaMenoRichiesta))
   const mediaLastMinute    = avg(settimane.map(s => s.lastMinute))
-  const mediaPizza         = avg(settimane.map(s => s.prefPizza))
-  const mediaCucina        = avg(settimane.map(s => s.prefCucina))
 
   const canaliPie = [
     { label: 'Sito web',  value: totPrenSito },
@@ -298,8 +294,6 @@ function VistaGlobale({ settimane }) {
             <InsightChip label="Slot più richiesto (freq.)" value={slotFrequente} />
             <InsightChip label="Fascia meno richiesta"      value={fasciaPocoRichiesta} />
             <InsightChip label="Media last minute/sett."    value={`${mediaLastMinute} pren.`} />
-            <InsightChip label="Media pizza/sett."          value={`${mediaPizza} pren.`} />
-            <InsightChip label="Media cucina/sett."         value={`${mediaCucina} pren.`} />
           </div>
         </div>
       </div>
