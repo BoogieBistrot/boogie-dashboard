@@ -1,0 +1,26 @@
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.15s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal { background: var(--bg); border: var(--border-style); border-top: 3px solid var(--accent); border-radius: var(--radius); width: 100%; max-width: 560px; box-shadow: var(--shadow-md); animation: slideUp 0.2s ease; max-height: 90vh; overflow-y: auto; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+.header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px 16px; border-bottom: var(--border-style); position: sticky; top: 0; background: var(--bg); z-index: 1; }
+.titolo { font-size: 1rem; font-weight: 700; color: var(--text); }
+
+.body { padding: 24px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.full { grid-column: 1 / -1; }
+.field label { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; color: var(--text2); }
+.req { color: var(--danger); }
+.field input, .field select { width: 100%; border: var(--border-style); border-radius: var(--radius-sm); padding: 9px 12px; font-size: 0.9rem; color: var(--text); font-family: var(--font-body); outline: none; transition: border-color 0.2s; }
+.field input:focus, .field select:focus { border-color: var(--accent); }
+.field select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.msg { padding: 9px 14px; border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: 16px; }
+.ok { background: rgba(46,125,50,0.1); color: var(--success); border: 1px solid rgba(46,125,50,0.3); }
+.err { background: rgba(192,57,43,0.1); color: var(--danger); border: 1px solid rgba(192,57,43,0.3); }
+
+.actions { display: flex; gap: 10px; justify-content: flex-end; padding-top: 16px; border-top: var(--border-style); }
+
+@media (max-width: 560px) { .grid { grid-template-columns: 1fr; } .full { grid-column: 1; } }

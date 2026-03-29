@@ -1,0 +1,62 @@
+.panel { animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.panelHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding-bottom: 16px; border-bottom: var(--border-style); flex-wrap: wrap; gap: 12px; }
+.panelTitle { display: flex; align-items: center; gap: 10px; font-size: 1.15rem; font-weight: 700; color: var(--text); }
+.headerActions { display: flex; align-items: center; gap: 10px; }
+.vistaTabs { display: flex; gap: 4px; }
+.vistaBtn { padding: 7px 18px; background: none; border: none; color: var(--text2); font-size: 0.88rem; font-weight: 500; cursor: pointer; font-family: var(--font-body); transition: all 0.15s; }
+.vistaBtn:hover { background: var(--bg3); color: var(--text); }
+.vistaActive { background: var(--accent); color: white; }
+.refresh { display: flex; align-items: center; justify-content: center; background: none; border: var(--border-style); border-radius: var(--radius-sm); color: var(--text2); padding: 6px 12px; font-size: 0.88rem; font-weight: 500; cursor: pointer; font-family: var(--font-body); transition: all 0.15s; }
+.refresh:hover { color: var(--accent); border-color: var(--accent); }
+.loading { font-size: 0.88rem; color: var(--text3); text-align: center; padding: 16px; font-style: italic; margin-bottom: 16px; }
+.calWrap { background: var(--bg2); border: var(--border-style); border-radius: var(--radius); padding: 16px; }
+.calWrap :global(.fc) { font-family: var(--font-body); color: var(--text); font-size: 14px; }
+.calWrap :global(.fc-theme-standard td), .calWrap :global(.fc-theme-standard th), .calWrap :global(.fc-theme-standard .fc-scrollgrid) { border-color: var(--border); }
+.calWrap :global(.fc-daygrid-day), .calWrap :global(.fc-timegrid-slot) { background: var(--bg2); }
+.calWrap :global(.fc-daygrid-day:hover) { background: var(--bg2); }
+.calWrap :global(.fc-col-header-cell) { background: var(--bg3); color: var(--text2); font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600; padding: 8px 0; }
+.calWrap :global(.fc-daygrid-day-number) { color: var(--text2); font-size: 0.85rem; font-weight: 500; padding: 6px 10px; }
+.calWrap :global(.fc-day-today) { background: rgba(184,130,10,0.08) !important; }
+.calWrap :global(.fc-day-today .fc-daygrid-day-number) { color: var(--accent); font-weight: 700; }
+.calWrap :global(.fc-button) { background: var(--bg3) !important; border: var(--border-style) !important; color: var(--text2) !important; font-family: var(--font-body) !important; font-size: 0.85rem !important; font-weight: 500 !important; padding: 5px 14px !important; box-shadow: none !important; text-transform: none !important; border-radius: var(--radius-sm) !important; }
+.calWrap :global(.fc-button:hover) { background: var(--bg3) !important; color: var(--text) !important; border-color: var(--accent) !important; }
+.calWrap :global(.fc-button-group .fc-button + .fc-button) { margin-left: 4px !important; }
+.calWrap :global(.fc-toolbar-title) { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+.calWrap :global(.fc-more-link) { color: var(--accent); font-size: 0.78rem; font-weight: 600; }
+.calWrap :global(.fc-event) { cursor: pointer; }
+.calWrap :global(.fc-list-day-cushion) { background: var(--bg3) !important; color: var(--text) !important; font-size: 0.85rem; font-weight: 600; padding: 8px 14px; }
+.calWrap :global(.fc-list-event:hover td) { background: var(--bg3) !important; }
+.calWrap :global(.fc-list-event td) { border-color: var(--border) !important; color: var(--text); padding: 10px 14px; }
+.calWrap :global(.fc-list-day th) { border-color: var(--border) !important; }
+.calWrap :global(.fc-list-empty) { background: var(--bg2); color: var(--text3); font-style: italic; }
+.evento { padding: 3px 6px; font-size: 0.78rem; line-height: 1.3; }
+.eventoTop { display: flex; align-items: center; gap: 5px; }
+.eventoChip { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.eventoNome { font-weight: 700; color: #1A1208; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.eventoNoteIcon { font-size: 0.65rem; flex-shrink: 0; }
+.eventoMeta { font-size: 0.72rem; color: #3D2E18; margin-top: 1px; font-weight: 500; }
+.modalOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.15s ease; }
+.modal { background: var(--bg2); border: var(--border-style); border-top: 3px solid var(--accent); border-radius: var(--radius); width: 100%; max-width: 400px; box-shadow: var(--shadow-md); animation: slideUp 0.2s ease; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+.modalHeader { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px 16px; border-bottom: var(--border-style); }
+.modalTitolo { font-size: 1.2rem; font-weight: 700; color: var(--text); }
+.modalClose { display: flex; align-items: center; justify-content: center; background: none; border: none; color: var(--text3); cursor: pointer; padding: 4px 8px; transition: color 0.15s; }
+.modalClose:hover { color: var(--danger); }
+.modalBody { padding: 20px 24px 24px; }
+.modalChip { display: inline-block; padding: 4px 14px; font-size: 0.78rem; font-weight: 600; margin-bottom: 16px; border-radius: 20px; }
+.modalRiga { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: var(--border-style); }
+.modalLabel { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); font-weight: 600; }
+.modalVal { font-size: 0.95rem; color: var(--text); font-weight: 600; }
+.modalNote { padding-top: 14px; }
+.modalNote .modalLabel { display: block; margin-bottom: 8px; }
+.modalNoteText { font-size: 0.9rem; color: var(--text); line-height: 1.6; background: var(--bg3); border: var(--border-style); border-radius: var(--radius-sm); padding: 10px 14px; margin: 0; }
+.modalTel { font-size: 0.95rem; color: var(--accent); font-weight: 600; text-decoration: none; }
+.modalTel:hover { text-decoration: underline; }
+.calWrap :global(.fc-timegrid-slot) { border-bottom: var(--border-style) !important; }
+.calWrap :global(.fc-timegrid-slot-minor) { border-bottom: 1px dashed var(--border2) !important; }
+.calWrap :global(.fc-timegrid-col) { border-right: var(--border-style) !important; }
+.calWrap :global(.fc-daygrid-event),
+.calWrap :global(.fc-timegrid-event) { border: none !important; border-radius: var(--radius-sm) !important; }
+.calWrap :global(.fc-event .fc-event-title),
+.calWrap :global(.fc-event .fc-event-time) { color: white !important; }

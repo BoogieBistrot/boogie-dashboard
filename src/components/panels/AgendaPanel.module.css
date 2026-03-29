@@ -1,0 +1,369 @@
+.panel { animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: var(--border-style);
+}
+
+.panelTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Layout due colonne */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 24px;
+  align-items: start;
+}
+
+/* ─── Calendario ─── */
+.calendarioCol {
+  min-width: 0;
+}
+
+.legenda {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.legendaItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--text2);
+}
+
+.legendaDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* FullCalendar overrides */
+:global(.fc) {
+  font-family: var(--font-body) !important;
+  font-size: 0.85rem;
+}
+:global(.fc .fc-toolbar-title) {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 600;
+}
+:global(.fc .fc-button) {
+  background: none !important;
+  border: var(--border-style) !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--text2) !important;
+  box-shadow: none !important;
+  padding: 4px 10px !important;
+  font-family: var(--font-body) !important;
+}
+:global(.fc .fc-button:hover) { border-color: var(--accent) !important; color: var(--accent) !important; }
+:global(.fc .fc-daygrid-day-number) { color: var(--text2); font-size: 0.8rem; }
+:global(.fc .fc-day-today) { background: rgba(196,145,58,0.06) !important; }
+:global(.fc .fc-day-today .fc-daygrid-day-number) { color: var(--accent); font-weight: 700; }
+:global(.fc .fc-col-header-cell-cushion) { color: var(--text3); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+:global(.fc th), :global(.fc td) { border-color: var(--border) !important; }
+:global(.fc .fc-scrollgrid) { border-color: var(--border) !important; border-radius: var(--radius); overflow: hidden; }
+:global(.fc .fc-daygrid-day:hover) { background: var(--bg3) !important; cursor: pointer; }
+:global(.fc .fc-event) { border-radius: 3px !important; font-size: 0.75rem !important; padding: 1px 4px !important; }
+:global(.fc-festivita-label .fc-event-title) { font-size: 0.7rem !important; color: #A0722A !important; }
+
+/* ─── Note ─── */
+.noteSezione {
+  background: var(--bg2);
+  border: var(--border-style);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.noteHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: var(--border-style);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.noteTitolo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+
+.noteFiltri {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: var(--bg);
+  border-radius: 99px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  margin-left: 2px;
+}
+
+.noteForm {
+  padding: 14px 16px;
+  border-bottom: var(--border-style);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.textarea {
+  width: 100%;
+  border: var(--border-style);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  font-family: var(--font-body);
+  resize: none;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+.textarea:focus { border-color: var(--accent); }
+.textarea::placeholder { color: var(--text3); }
+
+.noteFormRow {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.select {
+  border: var(--border-style);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  padding: 6px 8px;
+  font-size: 0.8rem;
+  font-family: var(--font-body);
+  outline: none;
+  flex: 1;
+  min-width: 0;
+}
+
+.noteLista {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 480px;
+  padding: 8px 0;
+}
+
+.empty {
+  font-size: 0.82rem;
+  color: var(--text3);
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+}
+
+.nota {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+.nota:last-child { border-bottom: none; }
+.nota:hover { background: var(--bg3); }
+
+.notaFatta { opacity: 0.5; }
+
+.checkBtn {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  transition: border-color 0.15s;
+}
+.checkBtn:hover { border-color: var(--accent); }
+
+.checkEmpty { display: block; width: 100%; height: 100%; }
+
+.notaBody { flex: 1; min-width: 0; }
+.notaTesto { font-size: 0.88rem; color: var(--text); line-height: 1.4; }
+.notaFatta .notaTesto { text-decoration: line-through; }
+
+.notaMeta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+.notaAutore { font-size: 0.72rem; color: var(--text3); font-weight: 600; }
+.notaData   { font-size: 0.72rem; color: var(--text3); }
+.notaCategoria {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 99px;
+}
+
+/* ─── Modal appuntamento ─── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal {
+  background: var(--bg);
+  border: var(--border-style);
+  border-top: 3px solid var(--accent);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 460px;
+  box-shadow: var(--shadow-md);
+  animation: slideUp 0.2s ease;
+}
+@keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 14px;
+  border-bottom: var(--border-style);
+}
+
+.modalTitolo {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.modalBody {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.field label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text2);
+}
+.field input, .field textarea {
+  border: var(--border-style);
+  border-radius: var(--radius-sm);
+  background: var(--bg2);
+  color: var(--text);
+  padding: 8px 10px;
+  font-size: 0.88rem;
+  font-family: var(--font-body);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.field input:focus, .field textarea:focus { border-color: var(--accent); }
+.field textarea { resize: none; }
+
+.fieldRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.tipoGroup { display: flex; gap: 6px; }
+.tipoBtn {
+  flex: 1;
+  padding: 7px 10px;
+  border: var(--border-style);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text2);
+  font-size: 0.82rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tipoBtn:hover { border-color: var(--accent); color: var(--accent); }
+.tipoBtnActive { color: #fff !important; }
+
+.modalFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 20px 18px;
+  border-top: var(--border-style);
+}
+
+.btnElimina {
+  margin-right: auto;
+  background: none;
+  border: none;
+  color: #C0392B;
+  font-size: 0.82rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.7;
+}
+.btnElimina:hover { opacity: 1; text-decoration: underline; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .noteSezione { max-height: none; }
+  .noteLista { max-height: 320px; }
+}

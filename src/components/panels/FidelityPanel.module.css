@@ -1,0 +1,36 @@
+.panel { animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.panelHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding-bottom: 16px; border-bottom: var(--border-style); }
+.panelTitle { display: flex; align-items: center; gap: 8px; font-size: 1.15rem; font-weight: 700; color: var(--text); }
+.body { background: var(--bg2); border: var(--border-style); border-radius: var(--radius); padding: 0; max-width: 720px; }
+.tabs { display: flex; border-bottom: var(--border-style); border-radius: var(--radius) var(--radius) 0 0; overflow: hidden; }
+.tab { display: flex; align-items: center; gap: 6px; padding: 14px 22px; background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; color: var(--text2); font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: all 0.15s; font-family: var(--font-body); }
+.tab:hover { color: var(--text); background: var(--bg3); }
+.tabActive { color: var(--accent); border-bottom-color: var(--accent); font-weight: 700; background: var(--bg2); }
+.tabContent { padding: 24px 28px; border-bottom: var(--border-style); }
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.field label { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.04em; color: var(--text2); }
+.field input, .field select { border: var(--border-style); color: var(--text); padding: 9px 12px; font-size: 0.9rem; outline: none; border-radius: var(--radius-sm); transition: border-color 0.2s; font-family: var(--font-body); }
+.field input:focus { border-color: var(--accent); }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.btnPrimary { padding: 11px 24px; background: var(--text); color: var(--bg2); border: none; border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 600; transition: all 0.15s; cursor: pointer; font-family: var(--font-body); }
+.btnPrimary:hover { background: var(--accent); }
+.btnPrimary:disabled { opacity: 0.5; cursor: not-allowed; }
+.msg { margin-top: 10px; font-size: 0.85rem; padding: 9px 14px; border-radius: var(--radius-sm); }
+.ok { background: rgba(46,125,50,0.1); color: #2E7D32; border: 1px solid rgba(46,125,50,0.3); }
+.err { background: rgba(192,57,43,0.1); color: #C0392B; border: 1px solid rgba(192,57,43,0.3); }
+.neutral { color: var(--text2); font-style: italic; font-size: 0.85rem; padding: 8px 0; }
+.listaBox { padding: 24px 28px; border-radius: 0 0 var(--radius) var(--radius); }
+.listaHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.listaTitle { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text2); font-weight: 600; }
+.refresh { display: flex; align-items: center; gap: 5px; background: none; border: var(--border-style); border-radius: var(--radius-sm); color: var(--text2); padding: 4px 12px; font-size: 0.82rem; font-weight: 500; cursor: pointer; font-family: var(--font-body); transition: all 0.15s; }
+.refresh:hover { color: var(--text); border-color: var(--accent); }
+.lista { display: flex; flex-direction: column; gap: 6px; }
+.empty { font-size: 0.88rem; color: var(--text3); text-align: center; padding: 20px; font-style: italic; }
+.clienteItem { background: var(--bg3); border: var(--border-style); border-radius: var(--radius-sm); padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.clienteNome { font-size: 0.95rem; color: var(--text); font-weight: 600; }
+.clienteEmail { font-size: 0.8rem; color: var(--text2); margin-top: 2px; }
+.clientePuntiBox { text-align: right; }
+.clientePunti { font-size: 1.2rem; color: var(--accent); font-weight: 700; }
+.clientePuntiLabel { font-size: 0.65rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+@media (max-width: 600px) { .tabContent { padding: 16px; } .listaBox { padding: 16px; } .row { grid-template-columns: 1fr; } .body { max-width: 100%; } }

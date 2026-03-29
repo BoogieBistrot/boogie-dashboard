@@ -1,0 +1,126 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #F7F3ED;
+  --bg2: #FFFFFF;
+  --bg3: #EDE8DC;
+  --bg-input: #fdfaf4;
+  --border: #C8B99A;
+  --border2: #D8CCBA;
+  --text: #1A1208;
+  --text2: #3D2E18;
+  --text3: #7A6448;
+  --accent: #B8820A;
+  --accent2: #7A5F30;
+  --danger: #C0392B;
+  --success: #2E7D32;
+
+  --font-body: 'Geist', 'Inter', sans-serif;
+  --font-display: 'Instrument Sans', sans-serif;
+
+  --radius: 8px;
+  --radius-sm: 6px;
+  --radius-lg: 12px;
+  --border-width: 1px;
+  --border-style: var(--border-width) solid var(--border);
+  --shadow: 0 1px 4px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+html, body, #root {
+  height: 100%;
+  font-family: var(--font-body);
+  font-size: 17px;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2 { font-family: var(--font-display); font-weight: 600; }
+
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; font-family: var(--font-body); }
+input, textarea, select { font-family: var(--font-body); font-size: 16px; background: var(--bg-input); }
+
+/* ─── Button system ─────────────────────────────────────────────────────────
+   Classi globali riutilizzabili in tutti i componenti.
+   Per cambiare lo stile di tutti i bottoni: modifica solo questo file.
+────────────────────────────────────────────────────────────────────────────── */
+
+/* Primary — azione principale (salva, aggiungi, conferma) */
+.btn-primary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 22px;
+  background: var(--text); color: var(--bg2);
+  border: none; border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: 0.9rem; font-weight: 600;
+  transition: background 0.15s;
+  cursor: pointer;
+}
+.btn-primary:hover { background: var(--accent); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Secondary — azione secondaria (annulla, esci) */
+.btn-secondary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 22px;
+  background: none; color: var(--text2);
+  border: var(--border-style); border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: 0.9rem; font-weight: 500;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+.btn-secondary:hover { color: var(--text); border-color: var(--text2); }
+
+/* Toggle — selezione tra opzioni (Mese/Settimana, Ricorrente/Data, ecc.) */
+.btn-toggle {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 8px 14px; flex: 1;
+  background: var(--bg3); color: var(--text2);
+  border: var(--border-style); border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: 0.85rem; font-weight: 500;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+.btn-toggle:hover { color: var(--text); border-color: var(--accent); }
+.btn-toggle.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-toggle.active-green { background: var(--success); border-color: var(--success); color: #fff; }
+.btn-toggle.active-danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+
+/* Icon — bottone solo icona (refresh, edit, delete, close) */
+.btn-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 8px 10px;
+  aspect-ratio: 1;
+  background: none; color: var(--text2);
+  border: var(--border-style); border-radius: var(--radius-sm);
+  transition: all 0.15s;
+  cursor: pointer;
+}
+.btn-icon:hover { color: var(--text); border-color: var(--accent); }
+.btn-icon.danger:hover { color: var(--danger); border-color: var(--danger); }
+
+/* Danger — azione distruttiva (cancella, elimina) */
+.btn-danger {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 22px;
+  background: var(--danger); color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: 0.9rem; font-weight: 600;
+  transition: background 0.15s;
+  cursor: pointer;
+}
+.btn-danger:hover { background: #a93226; }
+.btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Ghost — link-like, nessun bordo (logout, link secondari) */
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 0;
+  background: none; color: var(--text3);
+  border: none;
+  font-family: var(--font-body); font-size: 0.82rem; font-weight: 500;
+  transition: color 0.15s;
+  cursor: pointer;
+}
+.btn-ghost:hover { color: var(--danger); }

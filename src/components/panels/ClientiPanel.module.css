@@ -1,0 +1,195 @@
+.panel { animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border2);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.panelTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.count {
+  font-size: 0.75rem;
+  color: var(--text2);
+}
+
+.brevoLink {
+  font-size: 0.75rem;
+  color: var(--text2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+
+.brevoLink:hover { color: var(--accent); border-color: var(--accent); }
+
+.body {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+}
+
+.searchRow {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.searchInput {
+  width: 100%;
+  max-width: 360px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 9px 14px;
+  font-size: 0.85rem;
+  outline: none;
+  font-family: var(--font-body);
+  transition: border-color 0.2s;
+}
+
+.searchInput:focus { border-color: var(--accent); }
+.searchInput::placeholder { color: var(--text3); }
+
+.empty {
+  font-size: 0.82rem;
+  color: var(--text3);
+  text-align: center;
+  padding: 32px;
+  font-style: italic;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.table thead tr {
+  border-bottom: 2px solid var(--border);
+}
+
+.table th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text2);
+  white-space: nowrap;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+
+.table tbody tr:hover { background: var(--bg3); }
+
+.table td {
+  padding: 10px 14px;
+  color: var(--text);
+  vertical-align: middle;
+}
+
+.tdNome { font-weight: 500; white-space: nowrap; }
+.tdEmail { color: var(--text2); }
+.tdData { color: var(--text2); font-size: 0.78rem; white-space: nowrap; }
+
+.tdPunti { text-align: center; }
+
+.puntiChip {
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.consensoChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.consensoSi { background: rgba(76,175,80,0.15); color: #4CAF50; }
+.consensoNo { background: rgba(229,57,53,0.1); color: #E53935; }
+
+.risultati {
+  font-size: 0.75rem;
+  color: var(--text2);
+  align-self: center;
+}
+
+.paginazione {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.pageBtn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text2);
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all 0.15s;
+}
+
+.pageBtn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.pageBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.pageInfo {
+  font-size: 0.78rem;
+  color: var(--text2);
+}
+
+.chip { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; font-size: 0.7rem; font-weight: 700; }
+.chipSi { background: rgba(76,175,80,0.15); color: #4CAF50; }
+.chipNo { background: rgba(229,57,53,0.1); color: #E53935; }

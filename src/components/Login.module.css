@@ -1,0 +1,111 @@
+.wrap {
+  min-height: 100vh;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 380px;
+  position: relative;
+  text-align: center;
+}
+
+.box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #8B6F47, #C4913A);
+}
+
+.logo { margin-bottom: 20px; }
+.logoImg { height: 48px; width: auto; }
+
+.title {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  font-size: 0.75rem;
+  color: var(--text2);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+}
+
+.form { text-align: left; }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.field label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+
+.field input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  outline: none;
+  border-radius: 0;
+  transition: border-color 0.2s;
+  font-family: var(--font-body);
+  width: 100%;
+  letter-spacing: 0.1em;
+}
+
+.field input:focus { border-color: var(--accent); }
+.inputError { border-color: #E53935 !important; }
+
+.errorMsg {
+  font-size: 0.75rem;
+  color: #E53935;
+}
+
+.btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: var(--font-body);
+}
+
+.btn:hover { background: var(--accent2); }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
+}
+
+.shake { animation: shake 0.4s ease; }

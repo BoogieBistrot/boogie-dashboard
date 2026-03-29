@@ -1,0 +1,17 @@
+.widget { background: var(--bg2); border: var(--border-style); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 24px; }
+.header { margin-bottom: 16px; }
+.title { display: flex; align-items: center; gap: 6px; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text2); font-weight: 500; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.piattaforma { background: var(--bg3); border: var(--border-style); border-radius: var(--radius-sm); padding: 14px 16px; }
+.pHeader { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.pEmoji { display: flex; align-items: center; }
+.pNome { font-size: 0.82rem; color: var(--text); font-weight: 500; flex: 1; }
+.pVoto { font-size: 1rem; color: var(--accent); font-weight: 600; }
+.pCount { font-size: 0.72rem; color: var(--text2); margin-bottom: 10px; }
+.pStats { display: flex; gap: 20px; }
+.pStat { display: flex; flex-direction: column; gap: 3px; }
+.pStatLabel { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); }
+.pos { font-size: 1rem; color: #4CAF50; font-weight: 600; }
+.neg { font-size: 1rem; color: var(--danger); font-weight: 600; }
+.nd { font-size: 0.75rem; color: var(--text3); font-style: italic; }
+@media (max-width: 480px) { .grid { grid-template-columns: 1fr; } }

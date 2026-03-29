@@ -1,0 +1,38 @@
+.widget { background: var(--bg2); border: var(--border-style); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 24px; }
+.header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+.title { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text2); }
+.headerRight { display: flex; align-items: center; gap: 8px; }
+.filtroGroup { display: flex; gap: 4px; }
+.count { background: var(--accent); color: #fff; font-size: 0.65rem; font-weight: 700; padding: 1px 6px; border-radius: 20px; margin-left: 4px; }
+
+/* Form */
+.form { margin-bottom: 16px; }
+.textarea { width: 100%; border: var(--border-style); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 0.9rem; color: var(--text); resize: vertical; min-height: 60px; font-family: var(--font-body); transition: border-color 0.2s; }
+.textarea:focus { outline: none; border-color: var(--accent); }
+.formRow1 { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.select { border: var(--border-style); border-radius: var(--radius-sm); padding: 8px 10px; font-size: 0.85rem; color: var(--text); font-family: var(--font-body); outline: none; transition: border-color 0.2s; flex-shrink: 0; }
+.select:focus { border-color: var(--accent); }
+
+/* Per chips */
+.perGroup { display: flex; align-items: center; gap: 6px; flex: 1; }
+.perLabel { font-size: 0.75rem; color: var(--text3); font-weight: 500; white-space: nowrap; }
+.perChip { padding: 5px 12px; border: var(--border-style); border-radius: 20px; background: var(--bg3); color: var(--text2); font-size: 0.78rem; font-weight: 500; cursor: pointer; transition: all 0.15s; font-family: var(--font-body); white-space: nowrap; }
+.perChip:hover { border-color: var(--accent); color: var(--accent); }
+.perChipActive { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* Lista */
+.lista { display: flex; flex-direction: column; gap: 8px; }
+.empty { font-size: 0.88rem; color: var(--text3); text-align: center; padding: 20px; font-style: italic; }
+.nota { display: flex; align-items: flex-start; gap: 10px; background: var(--bg3); border: var(--border-style); border-radius: var(--radius-sm); padding: 12px 14px; transition: opacity 0.15s; }
+.notaCompletata { opacity: 0.5; }
+.checkBtn { display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; border: var(--border-style); background: none; cursor: pointer; flex-shrink: 0; margin-top: 1px; transition: all 0.15s; color: var(--success); }
+.checkBtn:hover { border-color: var(--success); background: rgba(46,125,50,0.08); }
+.checkEmpty { display: block; width: 8px; height: 8px; }
+.notaBody { flex: 1; min-width: 0; }
+.notaTesto { font-size: 0.9rem; color: var(--text); line-height: 1.5; margin-bottom: 6px; }
+.notaCompletata .notaTesto { text-decoration: line-through; color: var(--text3); }
+.notaMeta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.notaAutore { font-size: 0.72rem; font-weight: 600; color: var(--text2); }
+.notaData { font-size: 0.72rem; color: var(--text3); }
+.notaCategoria { font-size: 0.65rem; font-weight: 600; padding: 2px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.06em; }
+.perDisplay { font-size: 0.72rem; color: var(--accent); font-weight: 500; }

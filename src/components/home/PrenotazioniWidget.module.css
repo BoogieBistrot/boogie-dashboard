@@ -1,0 +1,38 @@
+.widget { background: var(--bg2); border: var(--border-style); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 24px; }
+.header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.title { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text2); }
+.loading { font-size: 0.88rem; color: var(--text3); padding: 16px; text-align: center; font-style: italic; }
+.giorni { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.giornoCard { background: var(--bg3); border: var(--border-style); border-radius: var(--radius-sm); overflow: hidden; }
+.oggi { border-color: var(--accent); box-shadow: 0 2px 8px rgba(184,130,10,0.1); }
+.giornoHeader { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; gap: 12px; }
+.giornoHeader:hover { background: rgba(0,0,0,0.02); }
+.giornoInfo { display: flex; flex-direction: column; gap: 2px; }
+.giornoLabel { font-size: 0.88rem; font-weight: 700; color: var(--text); }
+.oggi .giornoLabel { color: var(--accent); }
+.giornoData { font-size: 0.72rem; color: var(--text3); }
+.giornoStats { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.statChip { font-size: 0.72rem; font-weight: 600; color: var(--text2); background: var(--bg2); border: var(--border-style); padding: 2px 8px; border-radius: 20px; }
+.statChipPizza { font-size: 0.72rem; font-weight: 600; background: rgba(184,130,10,0.1); color: var(--accent); padding: 2px 8px; border-radius: 20px; }
+.statChipCucina { font-size: 0.72rem; font-weight: 600; background: rgba(46,125,50,0.1); color: var(--success); padding: 2px 8px; border-radius: 20px; }
+.nessuna { font-size: 0.72rem; color: var(--text3); font-style: italic; }
+.chevron { font-size: 0.7rem; color: var(--text3); margin-left: 4px; }
+.lista { border-top: var(--border-style); display: flex; flex-direction: column; }
+.listaVuota { padding: 12px 16px; font-size: 0.82rem; color: var(--text3); font-style: italic; border-top: var(--border-style); }
+.pren { display: flex; align-items: flex-start; gap: 12px; padding: 10px 16px; border-bottom: var(--border-style); background: var(--bg2); }
+.pren:last-child { border-bottom: none; }
+.prenOra { font-size: 0.88rem; font-weight: 700; color: var(--accent); min-width: 44px; flex-shrink: 0; padding-top: 1px; }
+.prenInfo { flex: 1; min-width: 0; }
+.prenNome { font-size: 0.9rem; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+.prenMeta { font-size: 0.78rem; color: var(--text2); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.prenTel { color: var(--accent); text-decoration: none; font-weight: 500; }
+.prenTel:hover { text-decoration: underline; }
+.prenNote { color: var(--text3); font-style: italic; }
+.prenStato { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; flex-shrink: 0; }
+.prefBadge { display: inline-flex; gap: 2px; }
+.prefPizza, .prefCucina { font-size: 0.85rem; }
+.footer { padding-top: 12px; border-top: var(--border-style); }
+@media (max-width: 600px) {
+  .giornoStats { gap: 4px; }
+  .statChip, .statChipPizza, .statChipCucina { font-size: 0.65rem; }
+}
