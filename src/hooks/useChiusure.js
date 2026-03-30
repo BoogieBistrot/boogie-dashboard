@@ -20,11 +20,7 @@ export function useChiusure() {
     return res.json()
   }, [])
   const elimina = useCallback(async (id) => {
-    const res = await fetch(BASE + '/gestisci-chiusure', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id })
-    })
+    const res = await fetch(`${BASE}/gestisci-chiusure?id=${id}`, { method: 'DELETE' })
     return res.json()
   }, [])
   return { chiusure, loading, ricarica: carica, salva, elimina }
