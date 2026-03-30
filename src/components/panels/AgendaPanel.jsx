@@ -220,17 +220,21 @@ export default function AgendaPanel() {
       return [{ ...base, id: a.id, date: a.data }]
     }
 
-    const endRecur = a.dataFineRicorrenza || undefined
+    const endRecur = a.dataFineRicorrenza || null
 
     if (a.ricorrenza === 'giornaliera') {
-      return [{ ...base, groupId: a.id, daysOfWeek: [0,1,2,3,4,5,6], startRecur: a.data, endRecur }]
+      const ev = { ...base, groupId: a.id, daysOfWeek: [0,1,2,3,4,5,6], startRecur: a.data }
+      if (endRecur) ev.endRecur = endRecur
+      return [ev]
     }
 
     if (a.ricorrenza === 'settimanale') {
       const giorni = a.giorniSettimana
         ? a.giorniSettimana.split(',').map(Number)
         : [new Date(a.data + 'T12:00:00').getDay()]
-      return [{ ...base, groupId: a.id, daysOfWeek: giorni, startRecur: a.data, endRecur }]
+      const ev = { ...base, groupId: a.id, daysOfWeek: giorni, startRecur: a.data }
+      if (endRecur) ev.endRecur = endRecur
+      return [ev]
     }
 
     if (a.ricorrenza === 'mensile') {

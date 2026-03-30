@@ -55,7 +55,7 @@ exports.handler = async (event) => {
         'Note':                body.note || '',
         'Ricorrenza':          body.ricorrenza || 'nessuna',
         'GiorniSettimana':     body.giorniSettimana || '',
-        'DataFineRicorrenza':  body.dataFineRicorrenza || '',
+        ...(body.dataFineRicorrenza ? { 'DataFineRicorrenza': body.dataFineRicorrenza } : {}),
       }
 
       // Aggiorna esistente
