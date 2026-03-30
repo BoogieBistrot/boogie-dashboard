@@ -4,9 +4,8 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import itLocale from '@fullcalendar/core/locales/it'
 import { useAppuntamenti } from '../../hooks/useAppuntamenti'
-import { useNote } from '../../hooks/useNote'
-import { IconClose, IconEdit, IconCheck, IconRefresh } from '../../icons/index.jsx'
-import { CalendarDots, NotePencil } from '@phosphor-icons/react'
+import { IconClose } from '../../icons/index.jsx'
+import { CalendarDots } from '@phosphor-icons/react'
 import styles from './AgendaPanel.module.css'
 
 // ─── Festività italiane 2024-2028 ───────────────────────────────────────────
@@ -44,15 +43,6 @@ const TIPO_COLORI = {
 }
 
 const TIPI = ['Appuntamento', 'Scadenza', 'Promemoria']
-const AUTORI = ['Andrea', 'Alessandra', 'Chiara']
-const CATEGORIE = ['Generale', 'Da fare', 'Urgente', 'Idea']
-const CATEGORIA_STYLE = {
-  'Generale': { bg: 'rgba(122,100,72,0.12)',  color: 'var(--text3)' },
-  'Da fare':  { bg: 'rgba(184,130,10,0.12)',  color: 'var(--accent)' },
-  'Urgente':  { bg: 'rgba(192,57,43,0.12)',   color: '#C0392B' },
-  'Idea':     { bg: 'rgba(46,125,50,0.12)',   color: '#2E7D32' },
-}
-
 // ─── Modal appuntamento ──────────────────────────────────────────────────────
 function ModalAppuntamento({ data, appuntamento, onSalva, onElimina, onClose }) {
   const isEdit = !!appuntamento
@@ -128,99 +118,6 @@ function ModalAppuntamento({ data, appuntamento, onSalva, onElimina, onClose }) 
   )
 }
 
-// ─── Sezione Note ────────────────────────────────────────────────────────────
-function SezioneNote() {
-  const { note, loading, carica, aggiungi, toggleCompletata, elimina } = useNote()
-  const [testo, setTesto] = useState('')
-  const [autore, setAutore] = useState('Andrea')
-  const [categoria, setCategoria] = useState('Generale')
-  const [submitting, setSubmitting] = useState(false)
-  const [filtro, setFiltro] = useState('aperte')
-
-  async function handleSubmit(e) {
-    e.preventDefault()
-    if (!testo.trim()) return
-    setSubmitting(true)
-    await aggiungi(testo.trim(), autore, categoria, [])
-    setTesto('')
-    setSubmitting(false)
-  }
-
-  const noteAperte    = note.filter(n => !n.completata)
-  const noteCompletate = note.filter(n => n.completata)
-  const noteFiltrate  = filtro === 'aperte' ? noteAperte : noteCompletate
-
-  return (
-    <div className={styles.noteSezione}>
-      <div className={styles.noteHeader}>
-        <span className={styles.noteTitolo}>
-          <NotePencil size={16} weight="light" />
-          Note del team
-        </span>
-        <div className={styles.noteFiltri}>
-          <button className={`btn-toggle ${filtro === 'aperte' ? 'active' : ''}`} onClick={() => setFiltro('aperte')}>
-            Aperte {noteAperte.length > 0 && <span className={styles.badge}>{noteAperte.length}</span>}
-          </button>
-          <button className={`btn-toggle ${filtro === 'completate' ? 'active' : ''}`} onClick={() => setFiltro('completate')}>
-            Fatte
-          </button>
-          <button className="btn-icon" onClick={carica} title="Aggiorna"><IconRefresh size={14} /></button>
-        </div>
-      </div>
-
-      <form className={styles.noteForm} onSubmit={handleSubmit}>
-        <textarea
-          className={styles.textarea}
-          value={testo}
-          onChange={e => setTesto(e.target.value)}
-          placeholder="Scrivi una nota..."
-          rows={2}
-        />
-        <div className={styles.noteFormRow}>
-          <select className={styles.select} value={autore} onChange={e => setAutore(e.target.value)}>
-            {AUTORI.map(a => <option key={a}>{a}</option>)}
-          </select>
-          <select className={styles.select} value={categoria} onChange={e => setCategoria(e.target.value)}>
-            {CATEGORIE.map(c => <option key={c}>{c}</option>)}
-          </select>
-          <button type="submit" className="btn-primary" disabled={submitting || !testo.trim()}>
-            {submitting ? '...' : 'Aggiungi'}
-          </button>
-        </div>
-      </form>
-
-      <div className={styles.noteLista}>
-        {loading && <div className={styles.empty}>Caricamento...</div>}
-        {!loading && noteFiltrate.length === 0 && (
-          <div className={styles.empty}>{filtro === 'aperte' ? 'Nessuna nota aperta' : 'Nessuna nota completata'}</div>
-        )}
-        {noteFiltrate.map(n => (
-          <div key={n.id} className={`${styles.nota} ${n.completata ? styles.notaFatta : ''}`}>
-            <button className={styles.checkBtn} onClick={() => toggleCompletata(n.id, !n.completata)}>
-              {n.completata
-                ? <IconCheck size={13} weight="bold" />
-                : <span className={styles.checkEmpty} />}
-            </button>
-            <div className={styles.notaBody}>
-              <div className={styles.notaTesto}>{n.testo}</div>
-              <div className={styles.notaMeta}>
-                <span className={styles.notaAutore}>{n.autore}</span>
-                <span className={styles.notaData}>{n.data}</span>
-                <span className={styles.notaCategoria} style={CATEGORIA_STYLE[n.categoria] || CATEGORIA_STYLE['Generale']}>
-                  {n.categoria}
-                </span>
-              </div>
-            </div>
-            <button className="btn-icon danger" onClick={() => elimina(n.id)}>
-              <IconClose size={13} />
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 // ─── Pannello principale ─────────────────────────────────────────────────────
 export default function AgendaPanel() {
   const { appuntamenti, loading, aggiungi, aggiorna, elimina } = useAppuntamenti()
@@ -284,9 +181,7 @@ export default function AgendaPanel() {
       </div>
 
       <div className={styles.layout}>
-        {/* Calendario */}
-        <div className={styles.calendarioCol}>
-          <FullCalendar
+        <FullCalendar
             ref={calRef}
             plugins={[dayGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
@@ -299,22 +194,18 @@ export default function AgendaPanel() {
             editable={false}
             dayMaxEvents={3}
           />
-          <div className={styles.legenda}>
-            <span className={styles.legendaItem}>
-              <span className={styles.legendaDot} style={{ background: 'rgba(160,114,42,0.5)' }} />
-              Festività
+        <div className={styles.legenda}>
+          <span className={styles.legendaItem}>
+            <span className={styles.legendaDot} style={{ background: 'rgba(160,114,42,0.5)' }} />
+            Festività
+          </span>
+          {TIPI.map(t => (
+            <span key={t} className={styles.legendaItem}>
+              <span className={styles.legendaDot} style={{ background: TIPO_COLORI[t] }} />
+              {t}
             </span>
-            {TIPI.map(t => (
-              <span key={t} className={styles.legendaItem}>
-                <span className={styles.legendaDot} style={{ background: TIPO_COLORI[t] }} />
-                {t}
-              </span>
-            ))}
-          </div>
+          ))}
         </div>
-
-        {/* Note */}
-        <SezioneNote />
       </div>
 
       {modal && (
