@@ -1,0 +1,19 @@
+.wrapper { animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.tabs {
+  display: flex;
+  border-bottom: var(--border-style);
+  margin-bottom: 28px;
+}
+
+.tab {
+  display: flex; align-items: center; gap: 6px;
+  padding: 12px 22px;
+  background: none; border: none; border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  color: var(--text2); font-size: 0.88rem; font-weight: 500;
+  cursor: pointer; transition: all 0.15s; font-family: var(--font-body);
+}
+.tab:hover { color: var(--text); background: var(--bg3); }
+.tabActive { color: var(--accent); border-bottom-color: var(--accent); font-weight: 700; }

@@ -96,6 +96,22 @@
 }
 .refreshBtn:hover { color: var(--accent); border-color: var(--accent); }
 
+.ricalcolaBtn {
+  font-size: 0.75rem;
+  padding: 0 10px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  font-family: var(--font-body);
+}
+.ricalcolaBtn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
+.ricalcolaBtn:disabled { opacity: 0.5; cursor: default; }
+
 .loading {
   font-size: 0.85rem;
   color: var(--text3);

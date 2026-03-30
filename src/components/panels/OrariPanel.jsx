@@ -86,6 +86,16 @@ export default function OrariPanel() {
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState(null)
   const [infoOpen, setInfoOpen] = useState(false)
+  const [editEnabled, setEditEnabled] = useState(false)
+
+  function abilitaModifica() { setEditEnabled(true); setMsg(null) }
+  function annullaModifica() {
+    const { fasceOrari: fo, grid: g } = buildState(orari)
+    setFasceOrari(fo)
+    setGrid(g)
+    setEditEnabled(false)
+    setMsg(null)
+  }
 
   useEffect(() => {
     if (!loading) {
@@ -158,9 +168,15 @@ export default function OrariPanel() {
             <IconInfo size={18} />
           </button>
           {msg && <span className={`${styles.inlineMsg} ${styles[msg.type]}`}>{msg.text}</span>}
-          <button className="btn-primary" onClick={handleSave} disabled={saving}>
-            {saving ? 'Salvataggio...' : 'Salva orari'}
-          </button>
+          {!editEnabled
+            ? <button className="btn-secondary" onClick={abilitaModifica}>Abilita modifica</button>
+            : <>
+                <button className="btn-secondary" onClick={annullaModifica} disabled={saving}>Annulla</button>
+                <button className="btn-primary" onClick={handleSave} disabled={saving}>
+                  {saving ? 'Salvataggio...' : 'Salva orari'}
+                </button>
+              </>
+          }
         </div>
       </div>
 
@@ -173,17 +189,17 @@ export default function OrariPanel() {
               <div className={styles.fasciaCardFields}>
                 <div className={styles.timeField}>
                   <label>Dalle</label>
-                  <input type="time" value={fasceOrari[f].oraInizio}
+                  <input type="time" value={fasceOrari[f].oraInizio} disabled={!editEnabled}
                     onChange={e => updateFascia(f, { oraInizio: e.target.value })} />
                 </div>
                 <div className={styles.timeField}>
                   <label>Alle</label>
-                  <input type="time" value={fasceOrari[f].oraFine}
+                  <input type="time" value={fasceOrari[f].oraFine} disabled={!editEnabled}
                     onChange={e => updateFascia(f, { oraFine: e.target.value })} />
                 </div>
                 <div className={styles.timeField}>
                   <label>Slot ogni (min)</label>
-                  <input type="number" min="5" max="60" step="5"
+                  <input type="number" min="5" max="60" step="5" disabled={!editEnabled}
                     value={fasceOrari[f].intervallo}
                     onChange={e => updateFascia(f, { intervallo: parseInt(e.target.value) || 15 })} />
                 </div>
@@ -209,6 +225,7 @@ export default function OrariPanel() {
                     <button
                       type="button"
                       className={`${styles.toggleBtn} ${cell.attivo ? styles.toggleOn : ''}`}
+                      disabled={!editEnabled}
                       onClick={() => toggleCell(key)}
                     >
                       <span className={styles.toggleDot} />

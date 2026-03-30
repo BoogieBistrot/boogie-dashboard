@@ -1,10 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
 
-const BASE_URL = 'https://shimmering-sundae-54b044.netlify.app/.netlify/functions/get-statistiche'
+const BASE_URL   = 'https://shimmering-sundae-54b044.netlify.app/.netlify/functions/get-statistiche'
+const CALC_URL   = 'https://shimmering-sundae-54b044.netlify.app/.netlify/functions/statistiche-settimanali'
+const STATS_SECRET = import.meta.env.VITE_STATS_SECRET || 'boogie-stats'
 
 export function useAnalytics() {
   const [settimane, setSettimane] = useState([])
   const [loading, setLoading] = useState(true)
+  const [ricalcolo, setRicalcolo] = useState(false)
 
   const carica = useCallback(() => {
     setLoading(true)
@@ -17,7 +20,23 @@ export function useAnalytics() {
       .catch(() => setLoading(false))
   }, [])
 
+  const ricalcola = useCallback(async () => {
+    setRicalcolo(true)
+    try {
+      const res = await fetch(CALC_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secret: STATS_SECRET }),
+      })
+      const json = await res.json()
+      if (json.success) await new Promise(r => setTimeout(r, 800)) // lascia propagare
+      carica()
+    } catch {
+      setRicalcolo(false)
+    }
+  }, [carica])
+
   useEffect(() => { carica() }, [carica])
 
-  return { settimane, loading, ricarica: carica }
+  return { settimane, loading, ricalcolo, ricarica: carica, ricalcola }
 }

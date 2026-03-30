@@ -218,7 +218,7 @@ export default function ChiusurePanel() {
             <div className={styles.listaCol}>
               <div className={styles.listaTitle}>
                 <span className={styles.listaDot} style={{ background: 'var(--danger)' }} />
-                Chiusure
+                Chiusure straordinarie attive
               </div>
               <div className={styles.lista}>
                 {chiusureList.length === 0
@@ -230,7 +230,7 @@ export default function ChiusurePanel() {
             <div className={styles.listaCol}>
               <div className={styles.listaTitle}>
                 <span className={styles.listaDot} style={{ background: 'var(--success)' }} />
-                Aperture straordinarie
+                Aperture straordinarie attive
               </div>
               <div className={styles.lista}>
                 {apertureList.length === 0

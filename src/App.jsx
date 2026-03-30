@@ -5,8 +5,7 @@ import AttesaWidget from './components/home/AttesaWidget'
 import MeteoWidget from './components/home/MeteoWidget'
 import RecensioniWidget from './components/home/RecensioniWidget'
 import PrenotazioniWidget from './components/home/PrenotazioniWidget'
-import ChiusurePanel from './components/panels/ChiusurePanel'
-import OrariPanel from './components/panels/OrariPanel'
+import GestisciOrariPanel from './components/panels/GestisciOrariPanel'
 import FidelityPanel from './components/panels/FidelityPanel'
 import ClientiPanel from './components/panels/ClientiPanel'
 import CalendarioPanel from './components/panels/CalendarioPanel'
@@ -40,8 +39,7 @@ export default function App() {
         </div>
       )
       case 'calendario': return <CalendarioPanel key={refreshCalendario} />
-      case 'orari':      return <OrariPanel />
-      case 'chiusure':   return <ChiusurePanel />
+      case 'gestisci-orari': return <GestisciOrariPanel />
       case 'fidelity':   return <FidelityPanel />
       case 'clienti':    return <ClientiPanel />
       case 'analytics':  return <AnalyticsPanel />
