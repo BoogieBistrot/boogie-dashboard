@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { useAnalytics } from '../../hooks/useAnalytics'
 import { IconAnalytics, IconRefresh } from '../../icons/index.jsx'
 import styles from './AnalyticsPanel.module.css'
@@ -145,7 +145,7 @@ function InsightChip({ label, value }) {
 }
 
 // — Vista settimana singola
-function VistaSettimana({ s, settimane }) {
+function VistaSettimana({ s }) {
   const totaleCoperti = s.copertipranzo + s.copertiAperitivo + s.copertiCena
   const fasceBarre = [
     { label: 'Pranzo',    value: s.copertipranzo },
@@ -168,6 +168,17 @@ function VistaSettimana({ s, settimane }) {
         <KpiCard label="Dim. media gruppo" value={s.dimGruppo} sub="persone" />
         <KpiCard label="Clienti unici"     value={s.clientiUnici} />
       </div>
+      <div className={`${styles.card} ${styles.cardFullWidth}`}>
+        <div className={styles.cardTitle}>Insights settimana</div>
+        <div className={styles.insightsGrid}>
+          <InsightChip label="Giorno più pieno"      value={s.giornopiuPieno} />
+          <InsightChip label="Giorno più vuoto"      value={s.giornopiuVuoto} />
+          <InsightChip label="Slot più richiesto"    value={s.slotPiu} />
+          <InsightChip label="Slot meno richiesto"   value={s.slotMeno} />
+          <InsightChip label="Fascia meno richiesta" value={s.fasciaMenoRichiesta} />
+          <InsightChip label="Last minute"           value={`${s.lastMinute} pren.`} />
+        </div>
+      </div>
       <div className={styles.chartsGrid}>
         <div className={styles.card}>
           <div className={styles.cardTitle}>Coperti per fascia</div>
@@ -181,31 +192,14 @@ function VistaSettimana({ s, settimane }) {
           )}
         </div>
         <div className={styles.card}>
-          <div className={styles.cardTitle}>Prenotazioni per giorno</div>
+          <div className={styles.cardTitle}>Prenotazioni Lun–Dom</div>
           <BarChart items={giorniBarre} />
         </div>
         <div className={styles.card}>
           <div className={styles.cardTitle}>Canale di prenotazione</div>
           <PieChart items={canaliPie} />
         </div>
-        <div className={styles.card}>
-          <div className={styles.cardTitle}>Insights settimana</div>
-          <div className={styles.insightsGrid}>
-            <InsightChip label="Giorno più pieno"      value={s.giornopiuPieno} />
-            <InsightChip label="Giorno più vuoto"      value={s.giornopiuVuoto} />
-            <InsightChip label="Slot più richiesto"    value={s.slotPiu} />
-            <InsightChip label="Slot meno richiesto"   value={s.slotMeno} />
-            <InsightChip label="Fascia meno richiesta" value={s.fasciaMenoRichiesta} />
-            <InsightChip label="Last minute"           value={`${s.lastMinute} pren.`} />
-          </div>
-        </div>
       </div>
-      {settimane.length > 1 && (
-        <div className={`${styles.card} ${styles.cardFullWidth}`}>
-          <div className={styles.cardTitle}>Trend prenotazioni — ultime {settimane.length} settimane</div>
-          <LineChart settimane={settimane} />
-        </div>
-      )}
     </>
   )
 }
@@ -235,18 +229,17 @@ function VistaGlobale({ settimane }) {
     value: avg(settimane.map(s => s[GIORNI_KEYS[i]])),
   }))
 
-  const giornoFrequente    = mode(settimane.map(s => s.giornopiuPieno))
-  const giornoVuoto        = mode(settimane.map(s => s.giornopiuVuoto))
-  const slotFrequente      = mode(settimane.map(s => s.slotPiu))
+  const giornoFrequente     = mode(settimane.map(s => s.giornopiuPieno))
+  const giornoVuoto         = mode(settimane.map(s => s.giornopiuVuoto))
+  const slotFrequente       = mode(settimane.map(s => s.slotPiu))
   const fasciaPocoRichiesta = mode(settimane.map(s => s.fasciaMenoRichiesta))
-  const mediaLastMinute    = avg(settimane.map(s => s.lastMinute))
+  const mediaLastMinute     = avg(settimane.map(s => s.lastMinute))
 
   const canaliPie = [
     { label: 'Sito web',  value: totPrenSito },
     { label: 'Telefono',  value: totPrenTel },
     { label: 'Eventi',    value: totEventi },
   ]
-
   const fasceBarre = [
     { label: 'Pranzo',    value: totPranzo },
     { label: 'Aperitivo', value: totAperitivo },
@@ -259,12 +252,12 @@ function VistaGlobale({ settimane }) {
         Media su <strong>{n} settimane</strong> di dati raccolti
       </div>
       <div className={styles.kpiGrid}>
-        <KpiCard label="Media pren./settimana" value={mediaPrenotazioni} />
+        <KpiCard label="Media pren./settimana"   value={mediaPrenotazioni} />
         <KpiCard label="Media coperti/settimana" value={mediaCoperti} />
-        <KpiCard label="Tasso cancellazione" value={`${mediaCancellaz}%`} sub="media" />
-        <KpiCard label="Lead time medio" value={`${mediaLeadTime}g`} sub="giorni anticipo" />
-        <KpiCard label="Dim. media gruppo" value={mediaDimGruppo} sub="persone" />
-        <KpiCard label="Clienti unici/sett." value={mediaClienti} />
+        <KpiCard label="Tasso cancellazione"     value={`${mediaCancellaz}%`} sub="media" />
+        <KpiCard label="Lead time medio"         value={`${mediaLeadTime}g`} sub="giorni anticipo" />
+        <KpiCard label="Dim. media gruppo"       value={mediaDimGruppo} sub="persone" />
+        <KpiCard label="Clienti unici/sett."     value={mediaClienti} />
       </div>
       <div className={styles.chartsGrid}>
         <div className={styles.card}>
@@ -299,7 +292,7 @@ function VistaGlobale({ settimane }) {
       </div>
       {settimane.length > 1 && (
         <div className={`${styles.card} ${styles.cardFullWidth}`}>
-          <div className={styles.cardTitle}>Trend prenotazioni — tutte le settimane</div>
+          <div className={styles.cardTitle}>Trend prenotazioni — ultime {settimane.length} settimane</div>
           <LineChart settimane={settimane} />
         </div>
       )}
@@ -307,11 +300,20 @@ function VistaGlobale({ settimane }) {
   )
 }
 
+const SPAN_OPTIONS = [
+  { label: 'Settimana', limit: 1 },
+  { label: 'Mese',      limit: 5 },
+  { label: '3 Mesi',    limit: 13 },
+  { label: 'Da sempre', limit: 100 },
+]
+
 export default function AnalyticsPanel() {
-  const { settimane, loading, ricalcolo, ricarica, ricalcola } = useAnalytics()
+  const [spanIdx, setSpanIdx] = useState(1) // default: Mese
+  const { settimane, loading, ricalcolo, ricarica, ricalcola } = useAnalytics(SPAN_OPTIONS[spanIdx].limit)
   const [vista, setVista] = useState('settimana') // 'settimana' | 'globale'
   const [idx, setIdx] = useState(0)
-  const s = settimane[idx] || null
+
+  const s = settimane[Math.min(idx, settimane.length - 1)] || null
 
   return (
     <div className={styles.panel}>
@@ -321,14 +323,26 @@ export default function AnalyticsPanel() {
           Analytics
         </h1>
         <div className={styles.headerRight}>
-          {/* Toggle vista */}
-          {settimane.length > 0 && (
+          {/* Span selector */}
+          <div className={styles.vistaToggle}>
+            {SPAN_OPTIONS.map((opt, i) => (
+              <button
+                key={opt.label}
+                className={`${styles.vistaBtn} ${spanIdx === i ? styles.vistaBtnActive : ''}`}
+                onClick={() => { setSpanIdx(i); setIdx(0) }}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          {/* Toggle settimana / globale */}
+          {settimane.length > 1 && (
             <div className={styles.vistaToggle}>
               <button
                 className={`${styles.vistaBtn} ${vista === 'settimana' ? styles.vistaBtnActive : ''}`}
                 onClick={() => setVista('settimana')}
               >
-                Settimana
+                Dettaglio
               </button>
               <button
                 className={`${styles.vistaBtn} ${vista === 'globale' ? styles.vistaBtnActive : ''}`}
@@ -374,7 +388,7 @@ export default function AnalyticsPanel() {
 
       {!loading && settimane.length > 0 && (
         <div className={styles.body}>
-          {vista === 'settimana' && s && <VistaSettimana s={s} settimane={settimane} />}
+          {vista === 'settimana' && s && <VistaSettimana s={s} />}
           {vista === 'globale' && <VistaGlobale settimane={settimane} />}
         </div>
       )}

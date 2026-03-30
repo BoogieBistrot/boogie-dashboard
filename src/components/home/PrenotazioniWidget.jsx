@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { usePrenotazioniGiornaliere } from '../../hooks/usePrenotazioniGiornaliere'
+import { useOrari } from '../../hooks/useOrari'
+import { useChiusure } from '../../hooks/useChiusure'
 import { IconRefresh, IconCalendar } from '../../icons/index.jsx'
 import styles from './PrenotazioniWidget.module.css'
 
@@ -27,6 +29,18 @@ function getLabelGiorno(dataStr) {
   return formatData(dataStr)
 }
 
+function isGiornoChiuso(dateStr, orari, chiusure) {
+  if (!orari.length) return false
+  const dayOfWeek = new Date(dateStr + 'T12:00:00').getDay()
+  // Nessun orario attivo per questo giorno della settimana
+  if (!orari.some(o => o.giorno === dayOfWeek && o.attivo)) return true
+  // Chiusura specifica per questa data o ricorrente per questo giorno
+  return chiusure.some(c => !c.fascia && (
+    (c.tipo === 'Specifica' && c.dataInizio <= dateStr && dateStr <= c.dataFine) ||
+    (c.tipo === 'Ricorrente' && c.giorno === dayOfWeek)
+  ))
+}
+
 function PrefBadge({ preferenza }) {
   if (!preferenza) return null
   const hasPizza  = preferenza.includes('Pizza')
@@ -39,19 +53,22 @@ function PrefBadge({ preferenza }) {
   )
 }
 
-function GiornoCard({ giorno }) {
-  const [aperto, setAperto] = useState(isOggi(giorno.data))
+function GiornoCard({ giorno, chiuso }) {
+  const [aperto, setAperto] = useState(isOggi(giorno.data) && !chiuso)
   const label = getLabelGiorno(giorno.data)
 
   return (
     <div className={`${styles.giornoCard} ${isOggi(giorno.data) ? styles.oggi : ''}`}>
-      <div className={styles.giornoHeader} onClick={() => setAperto(o => !o)}>
+      <div className={styles.giornoHeader} onClick={() => !chiuso && setAperto(o => !o)}
+        style={chiuso ? { cursor: 'default' } : {}}>
         <div className={styles.giornoInfo}>
           <span className={styles.giornoLabel}>{label}</span>
           <span className={styles.giornoData}>{formatData(giorno.data)}</span>
         </div>
         <div className={styles.giornoStats}>
-          {giorno.totPrenotazioni > 0 ? (
+          {chiuso ? (
+            <span className={styles.chiusoBadge}>Chiuso</span>
+          ) : giorno.totPrenotazioni > 0 ? (
             <>
               <span className={styles.statChip}>{giorno.totPrenotazioni} pren.</span>
               <span className={styles.statChip}>{giorno.totPersone} coperti</span>
@@ -61,11 +78,11 @@ function GiornoCard({ giorno }) {
           ) : (
             <span className={styles.nessuna}>Nessuna prenotazione</span>
           )}
-          <span className={styles.chevron}>{aperto ? '▴' : '▾'}</span>
+          {!chiuso && <span className={styles.chevron}>{aperto ? '▴' : '▾'}</span>}
         </div>
       </div>
 
-      {aperto && giorno.totPrenotazioni > 0 && (
+      {aperto && !chiuso && giorno.totPrenotazioni > 0 && (
         <div className={styles.lista}>
           {giorno.prenotazioni
             .sort((a, b) => a.ora.localeCompare(b.ora))
@@ -93,7 +110,7 @@ function GiornoCard({ giorno }) {
         </div>
       )}
 
-      {aperto && giorno.totPrenotazioni === 0 && (
+      {aperto && !chiuso && giorno.totPrenotazioni === 0 && (
         <div className={styles.listaVuota}>Nessuna prenotazione per questo giorno</div>
       )}
     </div>
@@ -102,6 +119,8 @@ function GiornoCard({ giorno }) {
 
 export default function PrenotazioniWidget({ onNavigate }) {
   const { giorni, loading, carica } = usePrenotazioniGiornaliere()
+  const { orari } = useOrari()
+  const { chiusure } = useChiusure()
 
   return (
     <div className={styles.widget}>
@@ -120,7 +139,13 @@ export default function PrenotazioniWidget({ onNavigate }) {
       {!loading && (
         <>
           <div className={styles.giorni}>
-            {giorni.map(g => <GiornoCard key={g.data} giorno={g} />)}
+            {giorni.map(g => (
+              <GiornoCard
+                key={g.data}
+                giorno={g}
+                chiuso={isGiornoChiuso(g.data, orari, chiusure)}
+              />
+            ))}
           </div>
           <div className={styles.footer}>
             <button

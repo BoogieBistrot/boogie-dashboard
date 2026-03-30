@@ -16,6 +16,7 @@
 .statChipPizza { font-size: 0.72rem; font-weight: 600; background: rgba(184,130,10,0.1); color: var(--accent); padding: 2px 8px; border-radius: 20px; }
 .statChipCucina { font-size: 0.72rem; font-weight: 600; background: rgba(46,125,50,0.1); color: var(--success); padding: 2px 8px; border-radius: 20px; }
 .nessuna { font-size: 0.72rem; color: var(--text3); font-style: italic; }
+.chiusoBadge { font-size: 0.72rem; font-weight: 600; color: var(--error, #c62828); background: rgba(198,40,40,0.08); border: 1px solid rgba(198,40,40,0.2); padding: 2px 8px; border-radius: 20px; letter-spacing: 0.04em; }
 .chevron { font-size: 0.7rem; color: var(--text3); margin-left: 4px; }
 .lista { border-top: var(--border-style); display: flex; flex-direction: column; }
 .listaVuota { padding: 12px 16px; font-size: 0.82rem; color: var(--text3); font-style: italic; border-top: var(--border-style); }

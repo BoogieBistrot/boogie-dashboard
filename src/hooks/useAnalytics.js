@@ -4,21 +4,21 @@ const BASE_URL   = 'https://shimmering-sundae-54b044.netlify.app/.netlify/functi
 const CALC_URL   = 'https://shimmering-sundae-54b044.netlify.app/.netlify/functions/statistiche-settimanali'
 const STATS_SECRET = import.meta.env.VITE_STATS_SECRET || 'boogie-stats'
 
-export function useAnalytics() {
+export function useAnalytics(limit = 12) {
   const [settimane, setSettimane] = useState([])
   const [loading, setLoading] = useState(true)
   const [ricalcolo, setRicalcolo] = useState(false)
 
   const carica = useCallback(() => {
     setLoading(true)
-    fetch(`${BASE_URL}?limit=12`)
+    fetch(`${BASE_URL}?limit=${limit}`)
       .then(r => r.json())
       .then(json => {
         if (json.success) setSettimane(json.settimane || [])
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [])
+  }, [limit])
 
   // date: "YYYY-MM-DD" opzionale — se omesso usa la settimana corrente
   const ricalcola = useCallback(async (date) => {
