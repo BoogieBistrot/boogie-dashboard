@@ -96,25 +96,6 @@
 }
 .refreshBtn:hover { color: var(--accent); border-color: var(--accent); }
 
-.ricalcolaGroup {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.dataRicalcolo {
-  height: 30px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg2);
-  color: var(--text2);
-  font-size: 0.75rem;
-  font-family: var(--font-body);
-  padding: 0 8px;
-  outline: none;
-  cursor: pointer;
-}
-.dataRicalcolo:focus { border-color: var(--accent); }
 
 .ricalcolaBtn {
   font-size: 0.75rem;

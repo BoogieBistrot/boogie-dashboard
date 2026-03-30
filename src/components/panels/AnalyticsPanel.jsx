@@ -311,8 +311,6 @@ export default function AnalyticsPanel() {
   const { settimane, loading, ricalcolo, ricarica, ricalcola } = useAnalytics()
   const [vista, setVista] = useState('settimana') // 'settimana' | 'globale'
   const [idx, setIdx] = useState(0)
-  const [dataRicalcolo, setDataRicalcolo] = useState('')
-
   const s = settimane[idx] || null
 
   return (
@@ -357,23 +355,14 @@ export default function AnalyticsPanel() {
           <button className={styles.refreshBtn} onClick={ricarica} title="Ricarica dati">
             <IconRefresh size={14} />
           </button>
-          <div className={styles.ricalcolaGroup}>
-            <input
-              type="date"
-              className={styles.dataRicalcolo}
-              value={dataRicalcolo}
-              onChange={e => setDataRicalcolo(e.target.value)}
-              title="Lascia vuoto per la settimana corrente"
-            />
-            <button
-              className={styles.ricalcolaBtn}
-              onClick={() => ricalcola(dataRicalcolo || undefined)}
-              disabled={ricalcolo}
-              title={dataRicalcolo ? `Ricalcola settimana del ${dataRicalcolo}` : 'Ricalcola settimana corrente'}
-            >
-              {ricalcolo ? 'Calcolo...' : 'Ricalcola'}
-            </button>
-          </div>
+          <button
+            className={styles.ricalcolaBtn}
+            onClick={() => ricalcola()}
+            disabled={ricalcolo}
+            title="Ricalcola statistiche settimana corrente"
+          >
+            {ricalcolo ? 'Calcolo...' : 'Ricalcola'}
+          </button>
         </div>
       </div>
 
