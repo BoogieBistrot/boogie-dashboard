@@ -207,46 +207,46 @@ export default function AgendaPanel() {
   }))
 
   const appEvents = appuntamenti.flatMap(a => {
+    const color = TIPO_COLORI[a.tipo] || TIPO_COLORI['Appuntamento']
     const base = {
-      id:              a.id,
       title:           (a.ora ? `${a.ora} ` : '') + a.title,
-      backgroundColor: TIPO_COLORI[a.tipo] || TIPO_COLORI['Appuntamento'],
-      borderColor:     TIPO_COLORI[a.tipo] || TIPO_COLORI['Appuntamento'],
+      backgroundColor: color,
+      borderColor:     color,
       textColor:       '#fff',
       extendedProps:   a,
     }
 
     if (!a.ricorrenza || a.ricorrenza === 'nessuna') {
-      return [{ ...base, date: a.data }]
+      return [{ ...base, id: a.id, date: a.data }]
     }
 
     const endRecur = a.dataFineRicorrenza || undefined
 
     if (a.ricorrenza === 'giornaliera') {
-      return [{ ...base, daysOfWeek: [0,1,2,3,4,5,6], startRecur: a.data, endRecur }]
+      return [{ ...base, groupId: a.id, daysOfWeek: [0,1,2,3,4,5,6], startRecur: a.data, endRecur }]
     }
 
     if (a.ricorrenza === 'settimanale') {
       const giorni = a.giorniSettimana
         ? a.giorniSettimana.split(',').map(Number)
         : [new Date(a.data + 'T12:00:00').getDay()]
-      return [{ ...base, daysOfWeek: giorni, startRecur: a.data, endRecur }]
+      return [{ ...base, groupId: a.id, daysOfWeek: giorni, startRecur: a.data, endRecur }]
     }
 
     if (a.ricorrenza === 'mensile') {
-      // Espansione client-side: stesso giorno del mese, da data inizio a data fine (o +2 anni)
       const dayOfMonth = new Date(a.data + 'T12:00:00').getDate()
       const limit = endRecur ? new Date(endRecur + 'T12:00:00') : new Date(new Date().getFullYear() + 2, 11, 31)
       const events = []
       let d = new Date(a.data + 'T12:00:00')
       while (d <= limit) {
-        events.push({ ...base, id: `${a.id}-${d.toISOString().split('T')[0]}`, date: d.toISOString().split('T')[0] })
+        const dateStr = d.toISOString().split('T')[0]
+        events.push({ ...base, id: `${a.id}-${dateStr}`, date: dateStr })
         d = new Date(d.getFullYear(), d.getMonth() + 1, dayOfMonth)
       }
       return events
     }
 
-    return [{ ...base, date: a.data }]
+    return [{ ...base, id: a.id, date: a.data }]
   })
 
   function handleDateClick(info) {
