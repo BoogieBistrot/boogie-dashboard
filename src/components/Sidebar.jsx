@@ -2,13 +2,14 @@ import React, { useState } from 'react'
 import styles from './Sidebar.module.css'
 import {
   IconHome, IconCalendar, IconLock, IconFidelity,
-  IconClienti, IconMarketing, IconLogout, IconMenu, IconClose, IconAnalytics, IconAgenda,
+  IconClienti, IconMarketing, IconLogout, IconMenu, IconClose, IconAnalytics, IconAgenda, IconClock,
 } from '../icons/index.jsx'
 
 const NAV_ITEMS = [
   { id: 'home',       Icon: IconHome,      label: 'Home' },
   { id: 'separator',  section: 'Prenotazioni' },
   { id: 'calendario', Icon: IconCalendar,  label: 'Calendario Prenotazioni' },
+  { id: 'orari',      Icon: IconClock,     label: 'Orari Ordinari' },
   { id: 'chiusure',   Icon: IconLock,      label: 'Chiusure & Aperture' },
   { id: 'separator2', section: 'Clienti' },
   { id: 'fidelity',   Icon: IconFidelity,  label: 'Programma Fidelity' },

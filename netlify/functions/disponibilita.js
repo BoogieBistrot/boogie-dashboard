@@ -72,9 +72,6 @@ exports.handler = async (event) => {
 
           let match = false;
 
-          if (tipo === 'Ricorrente' && giorno !== undefined && giorno !== null) {
-            match = parseInt(giorno) === giornoSettimana;
-          }
           if (tipo === 'Data specifica' && dataInizio) {
             const fine = dataFine || dataInizio;
             match = data >= dataInizio && data <= fine;

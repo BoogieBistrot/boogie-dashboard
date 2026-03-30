@@ -26,6 +26,7 @@ import {
   SignOut,
   List,
   ChartBar,
+  Clock,
 } from '@phosphor-icons/react'
 import GoogleIcon from './GoogleIcon.jsx'
 import TripAdvisorIcon from './TripAdvisorIcon.jsx'
@@ -72,3 +73,6 @@ export const IconAnalytics    = icon(ChartBar)
 
 // — Agenda
 export { CalendarDots as IconAgenda } from '@phosphor-icons/react'
+
+// — Orari
+export const IconClock = icon(Clock)

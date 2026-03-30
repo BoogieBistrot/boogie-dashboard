@@ -3,9 +3,8 @@ import { useChiusure } from '../../hooks/useChiusure'
 import { IconEdit, IconClose, IconLock } from '../../icons/index.jsx'
 import styles from './ChiusurePanel.module.css'
 
-const GIORNI = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab']
 const FASCE = ['Pranzo', 'Aperitivo', 'Cena']
-const EMPTY_FORM = { descrizione: '', tipo: 'Ricorrente', giorno: '', dataInizio: '', dataFine: '', fasce: [], tipoApertura: 'Chiusura' }
+const EMPTY_FORM = { descrizione: '', tipo: 'Data specifica', dataInizio: '', dataFine: '', fasce: [], tipoApertura: 'Chiusura' }
 
 function FormFields({ form, setForm, toggleFascia }) {
   return (
@@ -28,31 +27,11 @@ function FormFields({ form, setForm, toggleFascia }) {
         </div>
       </div>
       <div className={styles.field}>
-        <label>Tipo ricorrenza</label>
-        <div className={styles.toggleGroup}>
-          {['Ricorrente', 'Data specifica'].map(t => (
-            <button key={t} type="button"
-              className={`btn-toggle ${form.tipo === t ? 'active' : ''}`}
-              onClick={() => setForm(p => ({ ...p, tipo: t }))}>{t}</button>
-          ))}
-        </div>
+        <label>Data inizio</label>
+        <input type="date" value={form.dataInizio} onChange={e => setForm(p => ({ ...p, dataInizio: e.target.value }))} />
+        <label style={{ marginTop: '10px' }}>Data fine</label>
+        <input type="date" value={form.dataFine} onChange={e => setForm(p => ({ ...p, dataFine: e.target.value }))} />
       </div>
-      {form.tipo === 'Ricorrente' ? (
-        <div className={styles.field}>
-          <label>Giorno</label>
-          <select value={form.giorno} onChange={e => setForm(p => ({ ...p, giorno: e.target.value }))}>
-            <option value="">— seleziona —</option>
-            {GIORNI.map((g, i) => <option key={i} value={i}>{g}</option>)}
-          </select>
-        </div>
-      ) : (
-        <div className={styles.field}>
-          <label>Data inizio</label>
-          <input type="date" value={form.dataInizio} onChange={e => setForm(p => ({ ...p, dataInizio: e.target.value }))} />
-          <label style={{ marginTop: '10px' }}>Data fine</label>
-          <input type="date" value={form.dataFine} onChange={e => setForm(p => ({ ...p, dataFine: e.target.value }))} />
-        </div>
-      )}
       <div className={styles.field}>
         <label>Fasce orarie (vuoto = tutto il giorno)</label>
         <div className={styles.toggleGroup}>
@@ -103,7 +82,7 @@ function RegolaItem({ ch, onEdit, onElimina }) {
         <div>
           <div className={styles.itemDesc}>{ch.descrizione}</div>
           <div className={styles.itemMeta}>
-            {ch.tipo === 'Ricorrente' ? `Ogni ${GIORNI[ch.giorno]}` : `${ch.dataInizio}${ch.dataFine && ch.dataFine !== ch.dataInizio ? ` → ${ch.dataFine}` : ''}`}
+            {`${ch.dataInizio}${ch.dataFine && ch.dataFine !== ch.dataInizio ? ` → ${ch.dataFine}` : ''}`}
             {ch.fasce?.length > 0 && ` · ${ch.fasce.join(', ')}`}
           </div>
         </div>
@@ -137,7 +116,7 @@ export default function ChiusurePanel() {
   }
   function startEdit(ch) {
     setEditId(ch.id)
-    setEditForm({ descrizione: ch.descrizione || '', tipo: ch.tipo || 'Ricorrente', giorno: ch.giorno ?? '', dataInizio: ch.dataInizio || '', dataFine: ch.dataFine || '', fasce: ch.fasce || [], tipoApertura: ch.tipoApertura || 'Chiusura' })
+    setEditForm({ descrizione: ch.descrizione || '', tipo: 'Data specifica', dataInizio: ch.dataInizio || '', dataFine: ch.dataFine || '', fasce: ch.fasce || [], tipoApertura: ch.tipoApertura || 'Chiusura' })
     setEditMsg(null)
   }
   function closeEdit() { setEditId(null); setEditForm(EMPTY_FORM); setEditMsg(null) }
@@ -146,7 +125,7 @@ export default function ChiusurePanel() {
     e.preventDefault()
     if (!form.descrizione) { setMsg({ type: 'err', text: 'Inserisci una descrizione' }); return }
     setSubmitting(true)
-    const payload = { descrizione: form.descrizione, tipo: form.tipo, giorno: form.tipo === 'Ricorrente' ? parseInt(form.giorno) : null, dataInizio: form.tipo === 'Data specifica' ? form.dataInizio : null, dataFine: form.tipo === 'Data specifica' ? form.dataFine : null, fasce: form.fasce, tipoApertura: form.tipoApertura }
+    const payload = { descrizione: form.descrizione, tipo: 'Data specifica', dataInizio: form.dataInizio || null, dataFine: form.dataFine || null, fasce: form.fasce, tipoApertura: form.tipoApertura }
     const res = await salva(payload, null)
     setSubmitting(false)
     if (res.success) { setMsg({ type: 'ok', text: 'Aggiunto' }); setForm(EMPTY_FORM); ricarica() }
@@ -156,7 +135,7 @@ export default function ChiusurePanel() {
   async function handleSubmitEdit() {
     if (!editForm.descrizione) { setEditMsg({ type: 'err', text: 'Inserisci una descrizione' }); return }
     setSubmitting(true)
-    const payload = { descrizione: editForm.descrizione, tipo: editForm.tipo, giorno: editForm.tipo === 'Ricorrente' ? parseInt(editForm.giorno) : null, dataInizio: editForm.tipo === 'Data specifica' ? editForm.dataInizio : null, dataFine: editForm.tipo === 'Data specifica' ? editForm.dataFine : null, fasce: editForm.fasce, tipoApertura: editForm.tipoApertura }
+    const payload = { descrizione: editForm.descrizione, tipo: 'Data specifica', dataInizio: editForm.dataInizio || null, dataFine: editForm.dataFine || null, fasce: editForm.fasce, tipoApertura: editForm.tipoApertura }
     const res = await salva(payload, editId)
     setSubmitting(false)
     if (res.success) { closeEdit(); ricarica() }
