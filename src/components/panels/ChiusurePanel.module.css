@@ -35,7 +35,15 @@
 @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 .modalHeader { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px 16px; border-bottom: var(--border-style); }
 .modalTitolo { display: flex; align-items: center; gap: 8px; font-size: 1rem; font-weight: 700; color: var(--text); }
-.modalBody { padding: 24px; }
+.modalBody { padding: 22px 24px; display: flex; flex-direction: column; gap: 16px; }
+
+/* Info modal */
+.infoSection { display: flex; flex-direction: column; gap: 6px; }
+.infoSectionTitle {
+  font-size: 0.82rem; font-weight: 700; letter-spacing: 0.04em;
+  color: var(--accent); text-transform: uppercase;
+}
+.infoText { font-size: 0.9rem; color: var(--text2); line-height: 1.55; }
 
 @media (max-width: 700px) {
   .listeGrid { grid-template-columns: 1fr; }

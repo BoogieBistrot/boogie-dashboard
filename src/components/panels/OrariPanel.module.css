@@ -10,27 +10,49 @@
   display: flex; align-items: center; gap: 8px;
   font-size: 1.15rem; font-weight: 700; color: var(--text);
 }
-.headerRight { display: flex; align-items: center; gap: 12px; }
+.headerRight { display: flex; align-items: center; gap: 10px; }
 
-.inlineMsg {
-  font-size: 0.85rem; padding: 6px 12px; border-radius: var(--radius-sm);
-}
-.ok { background: rgba(46,125,50,0.1); color: #2E7D32; border: 1px solid rgba(46,125,50,0.3); }
+.inlineMsg { font-size: 0.85rem; padding: 6px 12px; border-radius: var(--radius-sm); }
+.ok  { background: rgba(46,125,50,0.1);  color: #2E7D32; border: 1px solid rgba(46,125,50,0.3); }
 .err { background: rgba(192,57,43,0.1); color: #C0392B; border: 1px solid rgba(192,57,43,0.3); }
 
-.body { max-width: 1000px; }
+.body { max-width: 960px; }
 .empty { font-size: 0.88rem; color: var(--text3); padding: 40px; text-align: center; font-style: italic; }
 
-/* Grid */
-.grid { display: flex; flex-direction: column; gap: 4px; }
+/* ── Fascia cards ─────────────────────────────────────────────────────────── */
+.fasceRow {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  margin-bottom: 32px;
+}
+.fasciaCard {
+  background: var(--bg2); border: var(--border-style);
+  border-radius: var(--radius); padding: 20px;
+}
+.fasciaCardTitle {
+  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 14px;
+}
+.fasciaCardFields { display: flex; flex-direction: column; gap: 10px; }
+
+.timeField { display: flex; flex-direction: column; gap: 4px; }
+.timeField label {
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.04em;
+  color: var(--text2); text-transform: uppercase;
+}
+.timeField input {
+  width: 100%; padding: 7px 10px; font-size: 0.88rem;
+  border: var(--border-style); border-radius: var(--radius-sm);
+  color: var(--text); outline: none; transition: border-color 0.2s;
+}
+.timeField input:focus { border-color: var(--accent); }
+
+/* ── Grid giorni ──────────────────────────────────────────────────────────── */
+.grid { display: flex; flex-direction: column; gap: 2px; }
 
 .gridHeader {
-  display: grid;
-  grid-template-columns: 110px repeat(3, 1fr);
-  gap: 8px;
-  padding: 0 0 8px;
-  border-bottom: var(--border-style);
-  margin-bottom: 4px;
+  display: grid; grid-template-columns: 110px repeat(3, 1fr);
+  gap: 8px; padding-bottom: 8px;
+  border-bottom: var(--border-style); margin-bottom: 4px;
 }
 .dayCol {}
 .fasciaHeader {
@@ -40,81 +62,77 @@
 }
 
 .gridRow {
-  display: grid;
-  grid-template-columns: 110px repeat(3, 1fr);
-  gap: 8px;
-  align-items: start;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--bg3);
+  display: grid; grid-template-columns: 110px repeat(3, 1fr);
+  gap: 8px; align-items: center;
+  padding: 6px 0; border-bottom: 1px solid var(--bg3);
 }
 .gridRow:last-child { border-bottom: none; }
 
-.dayLabel {
-  font-size: 0.88rem; font-weight: 600; color: var(--text);
-  padding-top: 10px;
-}
+.dayLabel { font-size: 0.88rem; font-weight: 600; color: var(--text); }
 
-/* Cell */
-.cell {
-  background: var(--bg3); border: var(--border-style);
-  border-radius: var(--radius-sm); padding: 10px 12px;
-  transition: background 0.15s, border-color 0.15s;
-  min-height: 42px;
-}
-.cellActive {
-  background: var(--bg2);
-  border-color: var(--accent);
-}
+.cell { display: flex; justify-content: center; }
 
 .toggleBtn {
-  display: flex; align-items: center; gap: 6px;
-  background: none; border: none; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; padding: 8px 10px;
+  background: var(--bg3); border: var(--border-style); border-radius: var(--radius-sm);
   font-size: 0.82rem; font-weight: 600; color: var(--text3);
-  cursor: pointer; transition: color 0.15s; width: 100%;
+  cursor: pointer; transition: all 0.15s;
 }
-.toggleBtn:hover { color: var(--text); }
-.toggleOn { color: var(--success); }
+.toggleBtn:hover { border-color: var(--text2); color: var(--text); }
+.toggleOn {
+  background: rgba(46,125,50,0.08);
+  border-color: rgba(46,125,50,0.4);
+  color: #2E7D32;
+}
 
 .toggleDot {
-  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
   background: var(--border); transition: background 0.15s;
 }
-.toggleOn .toggleDot { background: var(--success); }
+.toggleOn .toggleDot { background: #2E7D32; }
 
-/* Cell fields */
-.cellFields { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
-
-.timeRow { display: flex; gap: 6px; }
-.timeField { display: flex; flex-direction: column; gap: 3px; flex: 1; }
-.timeField label,
-.intervalField label {
-  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.04em;
-  color: var(--text2); text-transform: uppercase;
+/* ── Info Modal ───────────────────────────────────────────────────────────── */
+.modalOverlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+  z-index: 1000; display: flex; align-items: center; justify-content: center;
+  padding: 20px; animation: fadeIn 0.15s ease;
 }
-.timeField input,
-.intervalField input {
-  width: 100%; padding: 6px 8px; font-size: 0.82rem;
-  border: var(--border-style); border-radius: var(--radius-sm);
-  color: var(--text); outline: none; transition: border-color 0.2s;
+.modal {
+  background: var(--bg); border: var(--border-style);
+  border-top: 3px solid var(--accent); border-radius: var(--radius);
+  width: 100%; max-width: 520px;
+  box-shadow: var(--shadow-md); animation: slideUp 0.2s ease;
 }
-.timeField input:focus,
-.intervalField input:focus { border-color: var(--accent); }
+@keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+.modalHeader {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 24px 14px; border-bottom: var(--border-style);
+}
+.modalTitolo { display: flex; align-items: center; gap: 8px; font-size: 1rem; font-weight: 700; color: var(--text); }
+.modalBody { padding: 22px 24px; display: flex; flex-direction: column; gap: 16px; }
 
-.intervalField { display: flex; flex-direction: column; gap: 3px; }
-.intervalField input { max-width: 80px; }
+.infoSection { display: flex; flex-direction: column; gap: 6px; }
+.infoSectionTitle {
+  font-size: 0.82rem; font-weight: 700; letter-spacing: 0.04em;
+  color: var(--accent); text-transform: uppercase;
+}
+.infoText { font-size: 0.9rem; color: var(--text2); line-height: 1.55; }
 
-@media (max-width: 760px) {
+@media (max-width: 720px) {
+  .fasceRow { grid-template-columns: 1fr; }
   .gridHeader { display: none; }
   .gridRow {
     grid-template-columns: 1fr;
     background: var(--bg2); border: var(--border-style);
     border-radius: var(--radius); padding: 12px 16px;
-    margin-bottom: 8px; gap: 10px;
+    margin-bottom: 8px; gap: 8px;
   }
   .dayLabel {
-    font-size: 0.95rem; font-weight: 700;
-    padding-top: 0; padding-bottom: 4px;
-    border-bottom: var(--border-style); margin-bottom: 4px;
+    font-size: 0.95rem; font-weight: 700; padding-bottom: 8px;
+    border-bottom: var(--border-style);
   }
+  .cell { justify-content: flex-start; }
+  .toggleBtn { width: auto; }
   .body { max-width: 100%; }
 }

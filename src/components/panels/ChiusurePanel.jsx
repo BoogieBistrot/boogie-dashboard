@@ -1,7 +1,43 @@
 import { useState } from 'react'
 import { useChiusure } from '../../hooks/useChiusure'
-import { IconEdit, IconClose, IconLock } from '../../icons/index.jsx'
+import { IconEdit, IconClose, IconLock, IconInfo } from '../../icons/index.jsx'
 import styles from './ChiusurePanel.module.css'
+
+function InfoModal({ onClose }) {
+  return (
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div className={styles.modal} onClick={e => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
+          <div className={styles.modalTitolo}><IconInfo size={16} /> Come funziona</div>
+          <button className="btn-icon" onClick={onClose}><IconClose size={16} weight="regular" /></button>
+        </div>
+        <div className={styles.modalBody}>
+          <p className={styles.infoText}>
+            Questo pannello gestisce le <strong>eccezioni</strong> rispetto agli orari ordinari: chiusure straordinarie e aperture extra per date specifiche.
+          </p>
+          <div className={styles.infoSection}>
+            <div className={styles.infoSectionTitle}>Chiusura</div>
+            <p className={styles.infoText}>
+              Blocca la disponibilità per un intervallo di date. Se non selezioni nessuna fascia, il giorno risulta completamente chiuso. Se selezioni una o più fasce, solo quelle vengono bloccate.
+            </p>
+          </div>
+          <div className={styles.infoSection}>
+            <div className={styles.infoSectionTitle}>Apertura straordinaria</div>
+            <p className={styles.infoText}>
+              Rende disponibile il ristorante in date che negli orari ordinari risulterebbero chiuse — ad esempio un lunedì di festa. Gli orari utilizzati sono quelli impostati nel pannello <em>Orari Ordinari</em> per le fasce selezionate.
+            </p>
+          </div>
+          <div className={styles.infoSection}>
+            <div className={styles.infoSectionTitle}>Priorità</div>
+            <p className={styles.infoText}>
+              Le aperture straordinarie hanno sempre la precedenza sulle chiusure. Se una data ha sia una chiusura che un'apertura straordinaria, il ristorante risulta aperto.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 const FASCE = ['Pranzo', 'Aperitivo', 'Cena']
 const EMPTY_FORM = { descrizione: '', tipo: 'Data specifica', dataInizio: '', dataFine: '', fasce: [], tipoApertura: 'Chiusura' }
@@ -107,6 +143,7 @@ export default function ChiusurePanel() {
   const [msg, setMsg] = useState(null)
   const [editMsg, setEditMsg] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+  const [infoOpen, setInfoOpen] = useState(false)
 
   function toggleFascia(f) {
     setForm(prev => ({ ...prev, fasce: prev.fasce.includes(f) ? prev.fasce.filter(x => x !== f) : [...prev.fasce, f] }))
@@ -157,6 +194,9 @@ export default function ChiusurePanel() {
           <IconLock size={20} />
           Chiusure & Aperture straordinarie
         </h1>
+        <button className="btn-icon" onClick={() => setInfoOpen(true)} title="Come funziona">
+          <IconInfo size={18} />
+        </button>
       </div>
       <div className={styles.body}>
         <form className={styles.form} onSubmit={handleSubmitNew}>
@@ -207,6 +247,7 @@ export default function ChiusurePanel() {
         <EditModal form={editForm} setForm={setEditForm} toggleFascia={toggleEditFascia}
           onSubmit={handleSubmitEdit} onClose={closeEdit} submitting={submitting} msg={editMsg} />
       )}
+      {infoOpen && <InfoModal onClose={() => setInfoOpen(false)} />}
     </div>
   )
 }

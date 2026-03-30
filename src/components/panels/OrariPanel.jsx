@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useOrari } from '../../hooks/useOrari'
-import { IconClock } from '../../icons/index.jsx'
+import { IconClock, IconInfo, IconClose } from '../../icons/index.jsx'
 import styles from './OrariPanel.module.css'
 
 const GIORNI = [
@@ -13,51 +13,99 @@ const GIORNI = [
   { label: 'Domenica',  value: 0 },
 ]
 const FASCE = ['Pranzo', 'Aperitivo', 'Cena']
-const DEFAULT_CELL = { id: null, attivo: false, oraInizio: '', oraFine: '', intervallo: 15 }
 
-function buildGrid(orari) {
+const DEFAULT_FASCIA_ORARI = { oraInizio: '', oraFine: '', intervallo: 15 }
+
+function buildState(orari) {
+  const fasceOrari = {
+    Pranzo:     { ...DEFAULT_FASCIA_ORARI },
+    Aperitivo:  { ...DEFAULT_FASCIA_ORARI },
+    Cena:       { ...DEFAULT_FASCIA_ORARI },
+  }
   const grid = {}
-  for (const g of GIORNI) {
-    for (const f of FASCE) {
-      grid[`${g.value}_${f}`] = { ...DEFAULT_CELL }
-    }
-  }
+  for (const g of GIORNI)
+    for (const f of FASCE)
+      grid[`${g.value}_${f}`] = { id: null, attivo: false }
+
   for (const o of orari) {
-    const key = `${o.giorno}_${o.fascia}`
-    if (key in grid) {
-      grid[key] = {
-        id:         o.id,
-        attivo:     o.attivo,
-        oraInizio:  o.oraInizio,
-        oraFine:    o.oraFine,
-        intervallo: o.intervallo || 15,
-      }
+    // Prendi gli orari della fascia dal primo record disponibile
+    if (o.fascia && o.oraInizio && fasceOrari[o.fascia] && !fasceOrari[o.fascia].oraInizio) {
+      fasceOrari[o.fascia] = { oraInizio: o.oraInizio, oraFine: o.oraFine, intervallo: o.intervallo || 15 }
     }
+    const key = `${o.giorno}_${o.fascia}`
+    if (key in grid) grid[key] = { id: o.id, attivo: o.attivo }
   }
-  return grid
+  return { fasceOrari, grid }
+}
+
+function InfoModal({ onClose }) {
+  return (
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div className={styles.modal} onClick={e => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
+          <div className={styles.modalTitolo}><IconInfo size={16} /> Come funziona</div>
+          <button className="btn-icon" onClick={onClose}><IconClose size={16} weight="regular" /></button>
+        </div>
+        <div className={styles.modalBody}>
+          <p className={styles.infoText}>
+            Questo pannello definisce gli <strong>orari ordinari</strong> del ristorante, ovvero la settimana tipo.
+          </p>
+          <div className={styles.infoSection}>
+            <div className={styles.infoSectionTitle}>1 — Imposta gli orari per fascia</div>
+            <p className={styles.infoText}>
+              Nella parte in alto trovi tre box, uno per Pranzo, Aperitivo e Cena. Per ciascuno imposta l'orario di apertura, chiusura e ogni quanti minuti generare uno slot prenotabile. Questi orari valgono per tutti i giorni in cui la fascia è attiva.
+            </p>
+          </div>
+          <div className={styles.infoSection}>
+            <div className={styles.infoSectionTitle}>2 — Scegli i giorni di apertura</div>
+            <p className={styles.infoText}>
+              Nella griglia in basso, per ogni giorno della settimana puoi attivare o disattivare singolarmente ciascuna fascia. Un giorno con tutte le fasce chiuse risulterà non disponibile per le prenotazioni.
+            </p>
+          </div>
+          <div className={styles.infoSection}>
+            <div className={styles.infoSectionTitle}>3 — Salva</div>
+            <p className={styles.infoText}>
+              Clicca <strong>Salva orari</strong> per applicare le modifiche. Le variazioni straordinarie (chiusure o aperture eccezionali per date specifiche) si gestiscono nel pannello <em>Chiusure & Aperture</em>.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export default function OrariPanel() {
   const { orari, loading, ricarica, salva, elimina } = useOrari()
+  const [fasceOrari, setFasceOrari] = useState({
+    Pranzo:    { ...DEFAULT_FASCIA_ORARI },
+    Aperitivo: { ...DEFAULT_FASCIA_ORARI },
+    Cena:      { ...DEFAULT_FASCIA_ORARI },
+  })
   const [grid, setGrid] = useState({})
   const [originalIds, setOriginalIds] = useState({})
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState(null)
+  const [infoOpen, setInfoOpen] = useState(false)
 
   useEffect(() => {
     if (!loading) {
-      const g = buildGrid(orari)
+      const { fasceOrari: fo, grid: g } = buildState(orari)
+      setFasceOrari(fo)
       setGrid(g)
       const ids = {}
-      for (const [key, cell] of Object.entries(g)) {
+      for (const [key, cell] of Object.entries(g))
         if (cell.id) ids[key] = cell.id
-      }
       setOriginalIds(ids)
     }
   }, [orari, loading])
 
-  function updateCell(key, patch) {
-    setGrid(prev => ({ ...prev, [key]: { ...prev[key], ...patch } }))
+  function updateFascia(fascia, patch) {
+    setFasceOrari(prev => ({ ...prev, [fascia]: { ...prev[fascia], ...patch } }))
+    setMsg(null)
+  }
+
+  function toggleCell(key) {
+    setGrid(prev => ({ ...prev, [key]: { ...prev[key], attivo: !prev[key].attivo } }))
     setMsg(null)
   }
 
@@ -71,14 +119,15 @@ export default function OrariPanel() {
           const key = `${g.value}_${f}`
           const cell = grid[key]
           const existingId = originalIds[key] || null
+          const orarioFascia = fasceOrari[f]
 
-          if (cell.attivo && cell.oraInizio && cell.oraFine) {
+          if (cell.attivo && orarioFascia.oraInizio && orarioFascia.oraFine) {
             const payload = {
               giorno:     g.value,
               fascia:     f,
-              oraInizio:  cell.oraInizio,
-              oraFine:    cell.oraFine,
-              intervallo: cell.intervallo || 15,
+              oraInizio:  orarioFascia.oraInizio,
+              oraFine:    orarioFascia.oraFine,
+              intervallo: orarioFascia.intervallo || 15,
             }
             ops.push(salva(payload, existingId))
           } else if (!cell.attivo && existingId) {
@@ -105,6 +154,9 @@ export default function OrariPanel() {
           Orari Ordinari
         </h1>
         <div className={styles.headerRight}>
+          <button className="btn-icon" onClick={() => setInfoOpen(true)} title="Come funziona">
+            <IconInfo size={18} />
+          </button>
           {msg && <span className={`${styles.inlineMsg} ${styles[msg.type]}`}>{msg.text}</span>}
           <button className="btn-primary" onClick={handleSave} disabled={saving}>
             {saving ? 'Salvataggio...' : 'Salva orari'}
@@ -113,64 +165,55 @@ export default function OrariPanel() {
       </div>
 
       <div className={styles.body}>
+        {/* — Orari per fascia — */}
+        <div className={styles.fasceRow}>
+          {FASCE.map(f => (
+            <div key={f} className={styles.fasciaCard}>
+              <div className={styles.fasciaCardTitle}>{f}</div>
+              <div className={styles.fasciaCardFields}>
+                <div className={styles.timeField}>
+                  <label>Dalle</label>
+                  <input type="time" value={fasceOrari[f].oraInizio}
+                    onChange={e => updateFascia(f, { oraInizio: e.target.value })} />
+                </div>
+                <div className={styles.timeField}>
+                  <label>Alle</label>
+                  <input type="time" value={fasceOrari[f].oraFine}
+                    onChange={e => updateFascia(f, { oraFine: e.target.value })} />
+                </div>
+                <div className={styles.timeField}>
+                  <label>Slot ogni (min)</label>
+                  <input type="number" min="5" max="60" step="5"
+                    value={fasceOrari[f].intervallo}
+                    onChange={e => updateFascia(f, { intervallo: parseInt(e.target.value) || 15 })} />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* — Griglia giorni — */}
         <div className={styles.grid}>
           <div className={styles.gridHeader}>
             <div className={styles.dayCol} />
-            {FASCE.map(f => (
-              <div key={f} className={styles.fasciaHeader}>{f}</div>
-            ))}
+            {FASCE.map(f => <div key={f} className={styles.fasciaHeader}>{f}</div>)}
           </div>
-
           {GIORNI.map(g => (
             <div key={g.value} className={styles.gridRow}>
               <div className={styles.dayLabel}>{g.label}</div>
               {FASCE.map(f => {
                 const key = `${g.value}_${f}`
-                const cell = grid[key] || DEFAULT_CELL
+                const cell = grid[key] || { attivo: false }
                 return (
-                  <div key={f} className={`${styles.cell} ${cell.attivo ? styles.cellActive : ''}`}>
+                  <div key={f} className={styles.cell}>
                     <button
                       type="button"
                       className={`${styles.toggleBtn} ${cell.attivo ? styles.toggleOn : ''}`}
-                      onClick={() => updateCell(key, { attivo: !cell.attivo })}
+                      onClick={() => toggleCell(key)}
                     >
                       <span className={styles.toggleDot} />
                       {cell.attivo ? 'Aperto' : 'Chiuso'}
                     </button>
-
-                    {cell.attivo && (
-                      <div className={styles.cellFields}>
-                        <div className={styles.timeRow}>
-                          <div className={styles.timeField}>
-                            <label>Dalle</label>
-                            <input
-                              type="time"
-                              value={cell.oraInizio}
-                              onChange={e => updateCell(key, { oraInizio: e.target.value })}
-                            />
-                          </div>
-                          <div className={styles.timeField}>
-                            <label>Alle</label>
-                            <input
-                              type="time"
-                              value={cell.oraFine}
-                              onChange={e => updateCell(key, { oraFine: e.target.value })}
-                            />
-                          </div>
-                        </div>
-                        <div className={styles.intervalField}>
-                          <label>Slot ogni (min)</label>
-                          <input
-                            type="number"
-                            min="5"
-                            max="60"
-                            step="5"
-                            value={cell.intervallo}
-                            onChange={e => updateCell(key, { intervallo: parseInt(e.target.value) || 15 })}
-                          />
-                        </div>
-                      </div>
-                    )}
                   </div>
                 )
               })}
@@ -178,6 +221,8 @@ export default function OrariPanel() {
           ))}
         </div>
       </div>
+
+      {infoOpen && <InfoModal onClose={() => setInfoOpen(false)} />}
     </div>
   )
 }
