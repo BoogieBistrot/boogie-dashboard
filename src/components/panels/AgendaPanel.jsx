@@ -43,6 +43,17 @@ const TIPO_COLORI = {
 }
 
 const TIPI = ['Appuntamento', 'Scadenza', 'Promemoria']
+const RICORRENZE = ['nessuna', 'giornaliera', 'settimanale', 'mensile']
+const GIORNI_SETT = [
+  { label: 'Lun', value: 1 },
+  { label: 'Mar', value: 2 },
+  { label: 'Mer', value: 3 },
+  { label: 'Gio', value: 4 },
+  { label: 'Ven', value: 5 },
+  { label: 'Sab', value: 6 },
+  { label: 'Dom', value: 0 },
+]
+
 // ─── Modal appuntamento ──────────────────────────────────────────────────────
 function ModalAppuntamento({ data, appuntamento, onSalva, onElimina, onClose }) {
   const isEdit = !!appuntamento
@@ -51,12 +62,41 @@ function ModalAppuntamento({ data, appuntamento, onSalva, onElimina, onClose }) 
   const [ora, setOra] = useState(appuntamento?.ora || '')
   const [tipo, setTipo] = useState(appuntamento?.tipo || 'Appuntamento')
   const [note, setNote] = useState(appuntamento?.note || '')
+  const [ricorrenza, setRicorrenza] = useState(appuntamento?.ricorrenza || 'nessuna')
+  const [giorniSett, setGiorniSett] = useState(() => {
+    if (appuntamento?.giorniSettimana) return appuntamento.giorniSettimana.split(',').map(Number)
+    if (appuntamento?.data) return [new Date(appuntamento.data + 'T12:00:00').getDay()]
+    return []
+  })
+  const [dataFine, setDataFine] = useState(appuntamento?.dataFineRicorrenza || '')
   const [loading, setLoading] = useState(false)
+
+  function toggleGiorno(v) {
+    setGiorniSett(prev => prev.includes(v) ? prev.filter(g => g !== v) : [...prev, v])
+  }
+
+  // Quando si seleziona settimanale e non ci sono giorni, pre-seleziona il giorno della data scelta
+  function handleRicorrenza(r) {
+    setRicorrenza(r)
+    if (r === 'settimanale' && giorniSett.length === 0 && dataVal) {
+      setGiorniSett([new Date(dataVal + 'T12:00:00').getDay()])
+    }
+  }
 
   async function handleSalva() {
     if (!title.trim()) return
     setLoading(true)
-    await onSalva({ id: appuntamento?.id, title: title.trim(), data: dataVal, ora, tipo, note })
+    await onSalva({
+      id: appuntamento?.id,
+      title: title.trim(),
+      data: dataVal,
+      ora,
+      tipo,
+      note,
+      ricorrenza,
+      giorniSettimana: ricorrenza === 'settimanale' ? giorniSett.sort((a,b)=>a-b).join(',') : '',
+      dataFineRicorrenza: ricorrenza !== 'nessuna' ? dataFine : '',
+    })
     setLoading(false)
   }
 
@@ -74,7 +114,7 @@ function ModalAppuntamento({ data, appuntamento, onSalva, onElimina, onClose }) 
           </div>
           <div className={styles.fieldRow}>
             <div className={styles.field}>
-              <label>Data</label>
+              <label>{ricorrenza !== 'nessuna' ? 'Data inizio' : 'Data'}</label>
               <input type="date" value={dataVal} onChange={e => setDataVal(e.target.value)} />
             </div>
             <div className={styles.field}>
@@ -86,18 +126,52 @@ function ModalAppuntamento({ data, appuntamento, onSalva, onElimina, onClose }) 
             <label>Tipo</label>
             <div className={styles.tipoGroup}>
               {TIPI.map(t => (
-                <button
-                  key={t}
-                  type="button"
+                <button key={t} type="button"
                   className={`${styles.tipoBtn} ${tipo === t ? styles.tipoBtnActive : ''}`}
                   style={tipo === t ? { background: TIPO_COLORI[t], borderColor: TIPO_COLORI[t] } : {}}
                   onClick={() => setTipo(t)}
+                >{t}</button>
+              ))}
+            </div>
+          </div>
+
+          {/* Ricorrenza */}
+          <div className={styles.field}>
+            <label>Ricorrenza</label>
+            <div className={styles.tipoGroup}>
+              {RICORRENZE.map(r => (
+                <button key={r} type="button"
+                  className={`${styles.tipoBtn} ${ricorrenza === r ? styles.tipoBtnActive : ''}`}
+                  style={ricorrenza === r ? { background: 'var(--text2)', borderColor: 'var(--text2)' } : {}}
+                  onClick={() => handleRicorrenza(r)}
                 >
-                  {t}
+                  {r.charAt(0).toUpperCase() + r.slice(1)}
                 </button>
               ))}
             </div>
           </div>
+
+          {ricorrenza === 'settimanale' && (
+            <div className={styles.field}>
+              <label>Giorni</label>
+              <div className={styles.giorniGroup}>
+                {GIORNI_SETT.map(g => (
+                  <button key={g.value} type="button"
+                    className={`${styles.giornoBtn} ${giorniSett.includes(g.value) ? styles.giornoBtnActive : ''}`}
+                    onClick={() => toggleGiorno(g.value)}
+                  >{g.label}</button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {ricorrenza !== 'nessuna' && (
+            <div className={styles.field}>
+              <label>Fino a (opzionale)</label>
+              <input type="date" value={dataFine} onChange={e => setDataFine(e.target.value)} />
+            </div>
+          )}
+
           <div className={styles.field}>
             <label>Note (opzionale)</label>
             <textarea value={note} onChange={e => setNote(e.target.value)} rows={2} placeholder="Dettagli aggiuntivi..." />
@@ -106,7 +180,7 @@ function ModalAppuntamento({ data, appuntamento, onSalva, onElimina, onClose }) 
         <div className={styles.modalFooter}>
           {isEdit && (
             <button className={styles.btnElimina} onClick={() => onElimina(appuntamento.id)}>
-              Elimina
+              {ricorrenza !== 'nessuna' ? 'Elimina tutte le occorrenze' : 'Elimina'}
             </button>
           )}
           <button className="btn-primary" onClick={handleSalva} disabled={loading || !title.trim()}>
@@ -132,15 +206,48 @@ export default function AgendaPanel() {
     editable: false,
   }))
 
-  const appEvents = appuntamenti.map(a => ({
-    id:    a.id,
-    title: (a.ora ? `${a.ora} ` : '') + a.title,
-    date:  a.data,
-    backgroundColor: TIPO_COLORI[a.tipo] || TIPO_COLORI['Appuntamento'],
-    borderColor:     TIPO_COLORI[a.tipo] || TIPO_COLORI['Appuntamento'],
-    textColor: '#fff',
-    extendedProps: a,
-  }))
+  const appEvents = appuntamenti.flatMap(a => {
+    const base = {
+      id:              a.id,
+      title:           (a.ora ? `${a.ora} ` : '') + a.title,
+      backgroundColor: TIPO_COLORI[a.tipo] || TIPO_COLORI['Appuntamento'],
+      borderColor:     TIPO_COLORI[a.tipo] || TIPO_COLORI['Appuntamento'],
+      textColor:       '#fff',
+      extendedProps:   a,
+    }
+
+    if (!a.ricorrenza || a.ricorrenza === 'nessuna') {
+      return [{ ...base, date: a.data }]
+    }
+
+    const endRecur = a.dataFineRicorrenza || undefined
+
+    if (a.ricorrenza === 'giornaliera') {
+      return [{ ...base, daysOfWeek: [0,1,2,3,4,5,6], startRecur: a.data, endRecur }]
+    }
+
+    if (a.ricorrenza === 'settimanale') {
+      const giorni = a.giorniSettimana
+        ? a.giorniSettimana.split(',').map(Number)
+        : [new Date(a.data + 'T12:00:00').getDay()]
+      return [{ ...base, daysOfWeek: giorni, startRecur: a.data, endRecur }]
+    }
+
+    if (a.ricorrenza === 'mensile') {
+      // Espansione client-side: stesso giorno del mese, da data inizio a data fine (o +2 anni)
+      const dayOfMonth = new Date(a.data + 'T12:00:00').getDate()
+      const limit = endRecur ? new Date(endRecur + 'T12:00:00') : new Date(new Date().getFullYear() + 2, 11, 31)
+      const events = []
+      let d = new Date(a.data + 'T12:00:00')
+      while (d <= limit) {
+        events.push({ ...base, id: `${a.id}-${d.toISOString().split('T')[0]}`, date: d.toISOString().split('T')[0] })
+        d = new Date(d.getFullYear(), d.getMonth() + 1, dayOfMonth)
+      }
+      return events
+    }
+
+    return [{ ...base, date: a.data }]
+  })
 
   function handleDateClick(info) {
     setModal({ data: info.dateStr, appuntamento: null })

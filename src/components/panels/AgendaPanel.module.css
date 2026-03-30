@@ -151,7 +151,23 @@
   gap: 12px;
 }
 
-.tipoGroup { display: flex; gap: 6px; }
+.tipoGroup { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.giorniGroup { display: flex; gap: 4px; flex-wrap: wrap; }
+.giornoBtn {
+  width: 36px;
+  height: 32px;
+  border: var(--border-style);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text2);
+  font-size: 0.75rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.giornoBtn:hover { border-color: var(--accent); color: var(--accent); }
+.giornoBtnActive { background: var(--accent) !important; border-color: var(--accent) !important; color: #fff !important; }
 .tipoBtn {
   flex: 1;
   padding: 7px 10px;

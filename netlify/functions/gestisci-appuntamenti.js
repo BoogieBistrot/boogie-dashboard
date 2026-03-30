@@ -26,12 +26,15 @@ exports.handler = async (event) => {
       if (!res.ok) throw new Error(await res.text())
       const json = await res.json()
       const appuntamenti = (json.records || []).map(r => ({
-        id:    r.id,
-        title: r.fields['Titolo'] || '',
-        data:  r.fields['Data'] || '',
-        ora:   r.fields['Ora'] || '',
-        tipo:  r.fields['Tipo'] || 'Appuntamento',
-        note:  r.fields['Note'] || '',
+        id:                 r.id,
+        title:              r.fields['Titolo'] || '',
+        data:               r.fields['Data'] || '',
+        ora:                r.fields['Ora'] || '',
+        tipo:               r.fields['Tipo'] || 'Appuntamento',
+        note:               r.fields['Note'] || '',
+        ricorrenza:         r.fields['Ricorrenza'] || 'nessuna',
+        giorniSettimana:    r.fields['GiorniSettimana'] || '',
+        dataFineRicorrenza: r.fields['DataFineRicorrenza'] || '',
       }))
       return { statusCode: 200, headers: CORS, body: JSON.stringify({ success: true, appuntamenti }) }
     } catch (e) {
@@ -44,20 +47,23 @@ exports.handler = async (event) => {
     try {
       const body = JSON.parse(event.body)
 
+      const fields = {
+        'Titolo':              body.title,
+        'Data':                body.data,
+        'Ora':                 body.ora || '',
+        'Tipo':                body.tipo || 'Appuntamento',
+        'Note':                body.note || '',
+        'Ricorrenza':          body.ricorrenza || 'nessuna',
+        'GiorniSettimana':     body.giorniSettimana || '',
+        'DataFineRicorrenza':  body.dataFineRicorrenza || '',
+      }
+
       // Aggiorna esistente
       if (body.id) {
         const res = await fetch(`${BASE_URL}/${body.id}`, {
           method: 'PATCH',
           headers: AT_HEADERS,
-          body: JSON.stringify({
-            fields: {
-              'Titolo': body.title,
-              'Data':   body.data,
-              'Ora':    body.ora || '',
-              'Tipo':   body.tipo || 'Appuntamento',
-              'Note':   body.note || '',
-            }
-          })
+          body: JSON.stringify({ fields })
         })
         if (!res.ok) throw new Error(await res.text())
         return { statusCode: 200, headers: CORS, body: JSON.stringify({ success: true }) }
@@ -67,15 +73,7 @@ exports.handler = async (event) => {
       const res = await fetch(BASE_URL, {
         method: 'POST',
         headers: AT_HEADERS,
-        body: JSON.stringify({
-          fields: {
-            'Titolo': body.title,
-            'Data':   body.data,
-            'Ora':    body.ora || '',
-            'Tipo':   body.tipo || 'Appuntamento',
-            'Note':   body.note || '',
-          }
-        })
+        body: JSON.stringify({ fields })
       })
       if (!res.ok) throw new Error(await res.text())
       const json = await res.json()
