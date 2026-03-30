@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { usePrenotazioniGiornaliere } from '../../hooks/usePrenotazioniGiornaliere'
-import { useOrari } from '../../hooks/useOrari'
 import { useChiusure } from '../../hooks/useChiusure'
 import { IconRefresh, IconCalendar } from '../../icons/index.jsx'
 import styles from './PrenotazioniWidget.module.css'
@@ -29,12 +28,8 @@ function getLabelGiorno(dataStr) {
   return formatData(dataStr)
 }
 
-function isGiornoChiuso(dateStr, orari, chiusure) {
-  if (!orari.length) return false
+function isGiornoChiuso(dateStr, chiusure) {
   const dayOfWeek = new Date(dateStr + 'T12:00:00').getDay()
-  // Nessun orario attivo per questo giorno della settimana
-  if (!orari.some(o => o.giorno === dayOfWeek && o.attivo)) return true
-  // Chiusura specifica per questa data o ricorrente per questo giorno
   return chiusure.some(c => !c.fascia && (
     (c.tipo === 'Specifica' && c.dataInizio <= dateStr && dateStr <= c.dataFine) ||
     (c.tipo === 'Ricorrente' && c.giorno === dayOfWeek)
@@ -119,7 +114,6 @@ function GiornoCard({ giorno, chiuso }) {
 
 export default function PrenotazioniWidget({ onNavigate }) {
   const { giorni, loading, carica } = usePrenotazioniGiornaliere()
-  const { orari } = useOrari()
   const { chiusure } = useChiusure()
 
   return (
@@ -143,7 +137,7 @@ export default function PrenotazioniWidget({ onNavigate }) {
               <GiornoCard
                 key={g.data}
                 giorno={g}
-                chiuso={isGiornoChiuso(g.data, orari, chiusure)}
+                chiuso={isGiornoChiuso(g.data, chiusure)}
               />
             ))}
           </div>
