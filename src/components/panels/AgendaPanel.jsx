@@ -124,15 +124,6 @@ export default function AgendaPanel() {
   const [modal, setModal] = useState(null) // null | { data, appuntamento }
   const calRef = useRef(null)
 
-  const festivitaEvents = FESTIVITA.map(f => ({
-    ...f,
-    color: 'rgba(180,100,0,0.18)',
-    textColor: '#8B5E1A',
-    classNames: ['fc-festivita'],
-    editable: false,
-    display: 'background',
-  }))
-
   const festivitaLabels = FESTIVITA.map(f => ({
     ...f,
     color: 'transparent',
@@ -188,7 +179,7 @@ export default function AgendaPanel() {
             locale={itLocale}
             height="auto"
             headerToolbar={{ left: 'prev', center: 'title', right: 'next' }}
-            events={[...festivitaEvents, ...festivitaLabels, ...appEvents]}
+            events={[...festivitaLabels, ...appEvents]}
             dateClick={handleDateClick}
             eventClick={handleEventClick}
             editable={false}
