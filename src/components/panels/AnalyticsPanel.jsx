@@ -300,17 +300,9 @@ function VistaGlobale({ settimane }) {
   )
 }
 
-const SPAN_OPTIONS = [
-  { label: 'Settimana', limit: 1 },
-  { label: 'Mese',      limit: 5 },
-  { label: '3 Mesi',    limit: 13 },
-  { label: 'Da sempre', limit: 100 },
-]
-
 export default function AnalyticsPanel() {
-  const [spanIdx, setSpanIdx] = useState(1) // default: Mese
-  const { settimane, loading, ricalcolo, ricarica, ricalcola } = useAnalytics(SPAN_OPTIONS[spanIdx].limit)
-  const [vista, setVista] = useState('settimana') // 'settimana' | 'globale'
+  const { settimane, loading, ricarica } = useAnalytics()
+  const [vista, setVista] = useState('settimana')
   const [idx, setIdx] = useState(0)
 
   const s = settimane[Math.min(idx, settimane.length - 1)] || null
@@ -323,26 +315,13 @@ export default function AnalyticsPanel() {
           Analytics
         </h1>
         <div className={styles.headerRight}>
-          {/* Span selector */}
-          <div className={styles.vistaToggle}>
-            {SPAN_OPTIONS.map((opt, i) => (
-              <button
-                key={opt.label}
-                className={`${styles.vistaBtn} ${spanIdx === i ? styles.vistaBtnActive : ''}`}
-                onClick={() => { setSpanIdx(i); setIdx(0) }}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-          {/* Toggle settimana / globale */}
-          {settimane.length > 1 && (
+          {settimane.length > 0 && (
             <div className={styles.vistaToggle}>
               <button
                 className={`${styles.vistaBtn} ${vista === 'settimana' ? styles.vistaBtnActive : ''}`}
                 onClick={() => setVista('settimana')}
               >
-                Dettaglio
+                Settimana
               </button>
               <button
                 className={`${styles.vistaBtn} ${vista === 'globale' ? styles.vistaBtnActive : ''}`}
@@ -352,7 +331,6 @@ export default function AnalyticsPanel() {
               </button>
             </div>
           )}
-          {/* Selettore settimana */}
           {vista === 'settimana' && settimane.length > 0 && (
             <select
               className={styles.weekSelect}
@@ -368,14 +346,6 @@ export default function AnalyticsPanel() {
           )}
           <button className={styles.refreshBtn} onClick={ricarica} title="Ricarica dati">
             <IconRefresh size={14} />
-          </button>
-          <button
-            className={styles.ricalcolaBtn}
-            onClick={() => ricalcola()}
-            disabled={ricalcolo}
-            title="Ricalcola statistiche settimana corrente"
-          >
-            {ricalcolo ? 'Calcolo...' : 'Ricalcola'}
           </button>
         </div>
       </div>
