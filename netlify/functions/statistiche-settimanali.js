@@ -71,11 +71,15 @@ async function fetchAllRecords(url) {
 exports.handler = async (event) => {
   const isManual = event?.httpMethod === 'POST'
 
-  // Autenticazione per trigger manuale
+  if (event?.httpMethod === 'OPTIONS') {
+    return { statusCode: 204, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' }, body: '' }
+  }
+
+  // Parsing body unico — usato sia per auth che per parametri opzionali
+  let body = {}
   if (isManual) {
-    const secret = process.env.STATS_SECRET || 'boogie-stats'
-    let body = {}
     try { body = JSON.parse(event.body || '{}') } catch { /* noop */ }
+    const secret = process.env.STATS_SECRET || 'boogie-stats'
     if (body.secret !== secret) {
       return {
         statusCode: 401,
@@ -85,15 +89,15 @@ exports.handler = async (event) => {
     }
   }
 
-  if (event?.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' }, body: '' }
-  }
-
   try {
     // Scheduled: domenica sera → calcola settimana appena finita (ieri = domenica)
-    // Manuale: calcola la settimana corrente fino ad oggi
-    const oggi = new Date()
-    if (!isManual) oggi.setDate(oggi.getDate() - 1)
+    // Manuale: calcola la settimana corrente, o quella specificata con { date: "YYYY-MM-DD" }
+    let oggi = new Date()
+    if (isManual) {
+      if (body.date) oggi = new Date(body.date + 'T12:00:00')
+    } else {
+      oggi.setDate(oggi.getDate() - 1)
+    }
     const { mon, sun } = getWeekRange(oggi)
     const dataInizio = formatDate(mon)
     const dataFine   = formatDate(sun)

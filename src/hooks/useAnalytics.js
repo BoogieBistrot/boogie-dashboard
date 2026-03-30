@@ -20,16 +20,19 @@ export function useAnalytics() {
       .catch(() => setLoading(false))
   }, [])
 
-  const ricalcola = useCallback(async () => {
+  // date: "YYYY-MM-DD" opzionale — se omesso usa la settimana corrente
+  const ricalcola = useCallback(async (date) => {
     setRicalcolo(true)
     try {
+      const payload = { secret: STATS_SECRET }
+      if (date) payload.date = date
       const res = await fetch(CALC_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ secret: STATS_SECRET }),
+        body: JSON.stringify(payload),
       })
       const json = await res.json()
-      if (json.success) await new Promise(r => setTimeout(r, 800)) // lascia propagare
+      if (json.success) await new Promise(r => setTimeout(r, 800))
       carica()
     } catch {
       setRicalcolo(false)
