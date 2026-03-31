@@ -16,13 +16,12 @@ exports.handler = async (event) => {
   const AIRTABLE_TABLE   = process.env.AIRTABLE_TABLE || 'Prenotazioni'
 
   try {
-    // Calcola oggi, domani, dopodomani
-    const oggi = new Date()
-    oggi.setHours(0, 0, 0, 0)
+    // Calcola oggi, domani, dopodomani in timezone italiana (Europe/Rome)
+    const oggiStr = new Date().toLocaleDateString('sv', { timeZone: 'Europe/Rome' })
+    const [y, m, d] = oggiStr.split('-').map(Number)
     const giorni = [0, 1, 2].map(offset => {
-      const d = new Date(oggi)
-      d.setDate(oggi.getDate() + offset)
-      return d.toISOString().split('T')[0]
+      const date = new Date(y, m - 1, d + offset)
+      return date.toLocaleDateString('sv')
     })
 
     const [dataInizio, dataFine] = [giorni[0], giorni[2]]
