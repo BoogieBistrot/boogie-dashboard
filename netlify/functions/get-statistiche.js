@@ -10,11 +10,14 @@ const AT_HEADERS       = { 'Authorization': `Bearer ${AIRTABLE_TOKEN}` }
 exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
   }
 
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers, body: '' }
+
+  const { verifyToken } = require('./verifyToken')
+  if (!verifyToken(event)) return { statusCode: 401, headers, body: JSON.stringify({ success: false, error: 'Non autorizzato' }) }
 
   try {
     const limit = parseInt(event.queryStringParameters?.limit || '12')

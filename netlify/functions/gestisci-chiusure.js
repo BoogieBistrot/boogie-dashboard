@@ -3,11 +3,14 @@
 exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Allow-Methods': 'POST, DELETE, OPTIONS',
   };
 
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers, body: '' };
+
+  const { verifyToken } = require('./verifyToken');
+  if (!verifyToken(event)) return { statusCode: 401, headers, body: JSON.stringify({ success: false, error: 'Non autorizzato' }) };
 
   const AIRTABLE_TOKEN    = process.env.AIRTABLE_TOKEN;
   const AIRTABLE_BASE_ID  = process.env.AIRTABLE_BASE_ID;

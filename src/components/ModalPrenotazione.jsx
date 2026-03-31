@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { authFetch } from '../lib/authFetch'
 import { IconClose, IconCheck } from '../icons/index.jsx'
 import styles from './ModalPrenotazione.module.css'
 
@@ -69,7 +70,7 @@ export default function ModalPrenotazione({ prenotazione = null, onClose, onSucc
         ? { action: 'edit', id: prenotazione.id, ...form }
         : { ...form }
 
-      const res = await fetch(GESTISCI_URL, {
+      const res = await authFetch(GESTISCI_URL, {
         method: isEdit ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { authFetch } from '../lib/authFetch'
 
 const BASE_URL = 'https://shimmering-sundae-54b044.netlify.app/.netlify/functions/get-statistiche'
 
@@ -8,7 +9,7 @@ export function useAnalytics() {
 
   const carica = useCallback(() => {
     setLoading(true)
-    fetch(`${BASE_URL}?limit=12`)
+    authFetch(`${BASE_URL}?limit=12`)
       .then(r => r.json())
       .then(json => {
         if (json.success) setSettimane(json.settimane || [])

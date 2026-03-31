@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { authFetch } from '../lib/authFetch'
 const BASE = 'https://shimmering-sundae-54b044.netlify.app/.netlify/functions'
 
 export function useOrari() {
@@ -7,7 +8,7 @@ export function useOrari() {
 
   const carica = useCallback(() => {
     setLoading(true)
-    fetch(BASE + '/get-orari')
+    authFetch(BASE + '/get-orari')
       .then(r => r.json())
       .then(json => { if (json.success) setOrari(json.orari || []); setLoading(false); })
       .catch(() => setLoading(false))
@@ -16,7 +17,7 @@ export function useOrari() {
   useEffect(() => { carica() }, [carica])
 
   const salva = useCallback(async (payload, id = null) => {
-    const res = await fetch(BASE + '/gestisci-orari', {
+    const res = await authFetch(BASE + '/gestisci-orari', {
       method: id ? 'PATCH' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(id ? { id, ...payload } : payload),
@@ -25,7 +26,7 @@ export function useOrari() {
   }, [])
 
   const elimina = useCallback(async (id) => {
-    const res = await fetch(`${BASE}/gestisci-orari?id=${id}`, { method: 'DELETE' })
+    const res = await authFetch(`${BASE}/gestisci-orari?id=${id}`, { method: 'DELETE' })
     return res.json()
   }, [])
 

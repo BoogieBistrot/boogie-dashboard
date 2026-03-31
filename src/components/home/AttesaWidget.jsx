@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { authFetch } from '../../lib/authFetch'
 import { usePrenotazioni } from '../../hooks/usePrenotazioni'
 import { IconRefresh, IconClose, IconCheck } from '../../icons/index.jsx'
 import styles from './AttesaWidget.module.css'
@@ -26,7 +27,7 @@ export default function AttesaWidget() {
     if (confermaId !== id) { setConfermaId(id); return }
     setCancellando(id); setConfermaId(null)
     try {
-      await fetch(NETLIFY_BASE + '/cancella-prenotazione', {
+      await authFetch(NETLIFY_BASE + '/cancella-prenotazione', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id })
       })
     } catch {}

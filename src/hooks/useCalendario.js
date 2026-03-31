@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { authFetch } from '../lib/authFetch'
 
 const NETLIFY_BASE = 'https://shimmering-sundae-54b044.netlify.app/.netlify/functions'
 
@@ -16,7 +17,7 @@ export function useCalendario() {
   const carica = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch(NETLIFY_BASE + '/get-prenotazioni')
+      const res = await authFetch(NETLIFY_BASE + '/get-prenotazioni')
       const json = await res.json()
       if (!json.success) throw new Error()
       setEventi(json.prenotazioni.map(p => {

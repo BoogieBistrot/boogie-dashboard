@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
+import { authFetch } from '../lib/authFetch'
 export function useRecensioni() {
   const [dati, setDati] = useState(null)
   const [loading, setLoading] = useState(true)
   useEffect(() => {
-    fetch('https://shimmering-sundae-54b044.netlify.app/.netlify/functions/dati-dashboard')
+    authFetch('https://shimmering-sundae-54b044.netlify.app/.netlify/functions/dati-dashboard')
       .then(r => r.json())
       .then(json => {
         if (json.success && json.dati) {

@@ -3,17 +3,28 @@ const BASE_ID = 'appo1z9qJbcQm2PQx'
 const TABLE_ID = 'tblw6Crct6OaEjpDk'
 const BASE_URL = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}`
 
-const headers = {
+const atHeaders = {
   'Authorization': `Bearer ${AIRTABLE_TOKEN}`,
   'Content-Type': 'application/json',
 }
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+}
+
 exports.handler = async (event) => {
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: corsHeaders, body: '' }
+
+  const { verifyToken } = require('./verifyToken')
+  if (!verifyToken(event)) return { statusCode: 401, headers: corsHeaders, body: JSON.stringify({ success: false, error: 'Non autorizzato' }) }
+
   const method = event.httpMethod
 
   if (method === 'GET') {
     try {
-      const res = await fetch(`${BASE_URL}?sort[0][field]=Data&sort[0][direction]=desc&maxRecords=50`, { headers })
+      const res = await fetch(`${BASE_URL}?sort[0][field]=Data&sort[0][direction]=desc&maxRecords=50`, { headers: atHeaders })
       const json = await res.json()
       const note = (json.records || []).map(r => ({
         id: r.id,

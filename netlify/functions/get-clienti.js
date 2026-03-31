@@ -4,11 +4,14 @@
 exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
   };
 
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers, body: '' };
+
+  const { verifyToken } = require('./verifyToken');
+  if (!verifyToken(event)) return { statusCode: 401, headers, body: JSON.stringify({ success: false, error: 'Non autorizzato' }) };
 
   const BREVO_API_KEY = process.env.BREVO_API_KEY;
   const { page = '1', limit = '50', q = '' } = event.queryStringParameters || {};

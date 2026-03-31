@@ -1,18 +1,19 @@
 import { useState, useCallback } from 'react'
+import { authFetch } from '../lib/authFetch'
 const BASE = 'https://shimmering-sundae-54b044.netlify.app/.netlify/functions'
 export function useFidelity() {
   const [clienti, setClienti] = useState([])
   const [loading, setLoading] = useState(false)
   const caricaClienti = useCallback(() => {
     setLoading(true)
-    fetch(BASE + '/fidelity-clienti')
+    authFetch(BASE + '/fidelity-clienti')
       .then(r => r.json())
       .then(json => { if (json.success) setClienti(json.clienti || []); setLoading(false); })
       .catch(() => setLoading(false))
   }, [])
   const cercaClienti = useCallback(async (q) => {
     if (!q || q.length < 2) return []
-    const res = await fetch(BASE + '/fidelity-clienti?q=' + encodeURIComponent(q))
+    const res = await authFetch(BASE + '/fidelity-clienti?q=' + encodeURIComponent(q))
     const json = await res.json()
     return json.success ? json.clienti : []
   }, [])
@@ -21,7 +22,7 @@ export function useFidelity() {
     return res.json()
   }, [])
   const ricarica = useCallback(async (payload) => {
-    const res = await fetch(BASE + '/fidelity-ricarica', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+    const res = await authFetch(BASE + '/fidelity-ricarica', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
     return res.json()
   }, [])
   return { clienti, loading, caricaClienti, cercaClienti, iscrivi, ricarica }

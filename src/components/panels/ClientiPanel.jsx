@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { authFetch } from '../../lib/authFetch'
 import { IconClienti } from '../../icons/index.jsx'
 import styles from './ClientiPanel.module.css'
 
@@ -15,7 +16,7 @@ export default function ClientiPanel() {
 
   function carica(p = 1, q = '') {
     setLoading(true)
-    fetch(NETLIFY_BASE + '/get-clienti?page=' + p + '&limit=' + LIMIT + '&q=' + encodeURIComponent(q))
+    authFetch(NETLIFY_BASE + '/get-clienti?page=' + p + '&limit=' + LIMIT + '&q=' + encodeURIComponent(q))
       .then(r => r.json())
       .then(json => { if (json.success) { setClienti(json.clienti || []); setTotale(json.totale || 0); setPagina(p) } setLoading(false) })
       .catch(() => setLoading(false))

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { authFetch } from '../lib/authFetch'
 
 const API = 'https://shimmering-sundae-54b044.netlify.app/.netlify/functions/prenotazioni-giornaliere'
 
@@ -9,7 +10,7 @@ export function usePrenotazioniGiornaliere() {
   const carica = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch(API)
+      const res = await authFetch(API)
       const json = await res.json()
       if (json.success) setGiorni(json.giorni)
     } catch {}
