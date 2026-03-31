@@ -6,12 +6,23 @@ export default function Login({ onLogin }) {
   const [error, setError] = useState(false)
   const [shake, setShake] = useState(false)
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
-    if (password === 'Colle2026!$') {
-      localStorage.setItem('bb-auth-token', 'authenticated')
-      onLogin()
-    } else {
+    try {
+      const res = await fetch('/.netlify/functions/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        localStorage.setItem('bb-auth-token', data.token)
+        onLogin()
+      } else {
+        setError(true); setShake(true); setPassword('')
+        setTimeout(() => setShake(false), 500)
+      }
+    } catch {
       setError(true); setShake(true); setPassword('')
       setTimeout(() => setShake(false), 500)
     }
