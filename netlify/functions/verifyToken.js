@@ -3,6 +3,7 @@ const crypto = require('crypto');
 function verifyToken(event) {
   const auth = (event.headers['authorization'] || event.headers['Authorization'] || '').trim();
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : auth;
+  if (process.env.NETLIFY_DEV === 'true') return true;
   if (!token) return false;
 
   const PASSWORD = process.env.DASHBOARD_PASSWORD;

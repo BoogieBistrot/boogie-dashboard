@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { authFetch } from '../lib/authFetch'
 
-const API = 'https://shimmering-sundae-54b044.netlify.app/.netlify/functions/gestisci-appuntamenti'
+const API = '/.netlify/functions/gestisci-appuntamenti'
 
 export function useAppuntamenti() {
   const [appuntamenti, setAppuntamenti] = useState([])

@@ -2,7 +2,7 @@
 @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .panelHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding-bottom: 16px; border-bottom: var(--border-style); }
 .panelTitle { display: flex; align-items: center; gap: 8px; font-size: 1.15rem; font-weight: 700; color: var(--text); }
-.body { max-width: 960px; }
+.body { max-width: 100%; }
 .form { background: var(--bg2); border: var(--border-style); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 24px; }
 .formTitle { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text2); font-weight: 600; margin-bottom: 18px; }
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }

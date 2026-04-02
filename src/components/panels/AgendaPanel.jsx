@@ -1,11 +1,14 @@
 import { useState, useRef } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
+import timeGridPlugin from '@fullcalendar/timegrid'
+import listPlugin from '@fullcalendar/list'
 import interactionPlugin from '@fullcalendar/interaction'
 import itLocale from '@fullcalendar/core/locales/it'
 import { useAppuntamenti } from '../../hooks/useAppuntamenti'
 import { IconClose } from '../../icons/index.jsx'
-import { CalendarDots } from '@phosphor-icons/react'
+import { CalendarDots, Sparkle } from '@phosphor-icons/react'
+import { authFetch } from '../../lib/authFetch'
 import styles from './AgendaPanel.module.css'
 
 // ─── Festività italiane 2024-2028 ───────────────────────────────────────────
@@ -42,6 +45,12 @@ const TIPO_COLORI = {
   'Promemoria':   '#1565C0',
 }
 
+const TIPO_COLORI_RICORRENTE = {
+  'Appuntamento': '#7B5EA7',
+  'Scadenza':     '#E67E22',
+  'Promemoria':   '#00838F',
+}
+
 const TIPI = ['Appuntamento', 'Scadenza', 'Promemoria']
 const RICORRENZE = ['nessuna', 'giornaliera', 'settimanale', 'mensile']
 const GIORNI_SETT = [
@@ -55,12 +64,12 @@ const GIORNI_SETT = [
 ]
 
 // ─── Modal appuntamento ──────────────────────────────────────────────────────
-function ModalAppuntamento({ data, appuntamento, onSalva, onElimina, onClose }) {
+function ModalAppuntamento({ data, appuntamento, prefill, onSalva, onElimina, onClose }) {
   const isEdit = !!appuntamento
-  const [title, setTitle] = useState(appuntamento?.title || '')
-  const [dataVal, setDataVal] = useState(appuntamento?.data || data || '')
+  const [title, setTitle] = useState(appuntamento?.title || prefill?.title || '')
+  const [dataVal, setDataVal] = useState(appuntamento?.data || prefill?.data || data || '')
   const [ora, setOra] = useState(appuntamento?.ora || '')
-  const [tipo, setTipo] = useState(appuntamento?.tipo || 'Appuntamento')
+  const [tipo, setTipo] = useState(appuntamento?.tipo || prefill?.tipo || 'Appuntamento')
   const [note, setNote] = useState(appuntamento?.note || '')
   const [ricorrenza, setRicorrenza] = useState(appuntamento?.ricorrenza || 'nessuna')
   const [giorniSett, setGiorniSett] = useState(() => {
@@ -192,11 +201,88 @@ function ModalAppuntamento({ data, appuntamento, onSalva, onElimina, onClose }) 
   )
 }
 
+const isMobile = () => window.innerWidth <= 768
+
+function faseSpons(dataEvento) {
+  if (!dataEvento) return null
+  const oggi = new Date(); oggi.setHours(0,0,0,0)
+  const evento = new Date(dataEvento + 'T00:00:00')
+  const giorni = Math.round((evento - oggi) / 86400000)
+  if (giorni < 2)  return { emoji: '❌', label: 'Troppo tardi per sponsorizzare', sub: 'Usa Stories + link WhatsApp', tipo: 'stop' }
+  if (giorni < 5)  return { emoji: '⚠️', label: 'Solo retargeting', sub: 'Mostralo a chi ti conosce già', tipo: 'warning' }
+  if (giorni <= 14) return { emoji: '✅', label: 'Momento perfetto — lancia ora!', sub: `${giorni} giorni all'evento`, tipo: 'go' }
+  if (giorni <= 30) return { emoji: '⏸️', label: 'Troppo presto per vendere', sub: 'Fai brand awareness, non chiedere prenotazioni', tipo: 'wait' }
+  return              { emoji: '⏸️', label: 'Aspetta ancora', sub: 'Torna quando mancano ~14 giorni', tipo: 'wait' }
+}
+
 // ─── Pannello principale ─────────────────────────────────────────────────────
 export default function AgendaPanel() {
   const { appuntamenti, loading, aggiungi, aggiorna, elimina } = useAppuntamenti()
-  const [modal, setModal] = useState(null) // null | { data, appuntamento }
+  const [modal, setModal] = useState(null)
+  const [vistaAttiva, setVistaAttiva] = useState(isMobile() ? 'listWeek' : 'dayGridMonth')
+  const [aiAperto, setAiAperto] = useState(false)
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiSuggerimenti, setAiSuggerimenti] = useState(null)
+  const [aiIgnorate, setAiIgnorate] = useState([])
+  const [ignorateAperte, setIgnorateAperte] = useState(false)
   const calRef = useRef(null)
+
+  async function richiediSuggerimenti(force = false) {
+    setAiAperto(true)
+    if (aiSuggerimenti && !force) return
+    setAiLoading(true)
+    setAiSuggerimenti(null)
+    const oggi = new Date()
+    const fraduemesi = new Date(oggi)
+    fraduemesi.setMonth(fraduemesi.getMonth() + 2)
+    const appFiltrati = appuntamenti.filter(a => {
+      if (!a.data) return false
+      const d = new Date(a.data + 'T12:00:00')
+      return d >= oggi && d <= fraduemesi
+    })
+    const festFiltrate = FESTIVITA.filter(f => {
+      const d = new Date(f.date + 'T12:00:00')
+      return d >= oggi && d <= fraduemesi
+    }).map(f => ({ date: f.date, title: f.title.replace(/\p{Emoji}/gu, '').trim() }))
+    try {
+      const res = await authFetch('/.netlify/functions/suggerisci-agenda', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appuntamenti: appFiltrati, festivita: festFiltrate, dataOggi: oggi.toISOString().split('T')[0] })
+      })
+      const json = await res.json()
+      setAiSuggerimenti(Array.isArray(json.suggerimenti) ? json.suggerimenti : [])
+    } catch {
+      setAiSuggerimenti([])
+    }
+    setAiLoading(false)
+  }
+
+  function ignoraSuggerimento(i) {
+    const s = aiSuggerimenti[i]
+    setAiSuggerimenti(prev => prev.filter((_, idx) => idx !== i))
+    setAiIgnorate(prev => [...prev, s])
+  }
+
+  function ripristinaSuggerimento(i) {
+    const s = aiIgnorate[i]
+    setAiIgnorate(prev => prev.filter((_, idx) => idx !== i))
+    setAiSuggerimenti(prev => [...(prev || []), s])
+  }
+
+  function seguiConsiglio(s) {
+    setModal({ data: s.evento.data, appuntamento: null, prefill: s.evento })
+    ignoraSuggerimento(aiSuggerimenti.indexOf(s))
+  }
+
+  function cambiaVista(vista) {
+    setVistaAttiva(vista)
+    calRef.current?.getApi().changeView(vista)
+  }
+
+  const viste = isMobile()
+    ? [{ id: 'listDay', label: 'Giorno' }, { id: 'listWeek', label: 'Settimana' }, { id: 'listMonth', label: 'Mese' }]
+    : [{ id: 'dayGridMonth', label: 'Mese' }, { id: 'timeGridWeek', label: 'Settimana' }, { id: 'timeGridDay', label: 'Giorno' }]
 
   const festivitaLabels = FESTIVITA.map(f => ({
     ...f,
@@ -207,7 +293,10 @@ export default function AgendaPanel() {
   }))
 
   const appEvents = appuntamenti.flatMap(a => {
-    const color = TIPO_COLORI[a.tipo] || TIPO_COLORI['Appuntamento']
+    const isRicorrente = a.ricorrenza && a.ricorrenza !== 'nessuna'
+    const color = isRicorrente
+      ? (TIPO_COLORI_RICORRENTE[a.tipo] || TIPO_COLORI_RICORRENTE['Appuntamento'])
+      : (TIPO_COLORI[a.tipo] || TIPO_COLORI['Appuntamento'])
     const base = {
       title:           (a.ora ? `${a.ora} ` : '') + a.title,
       backgroundColor: color,
@@ -252,7 +341,6 @@ export default function AgendaPanel() {
 
     return [{ ...base, id: a.id, date: a.data }]
   })
-
   function handleDateClick(info) {
     setModal({ data: info.dateStr, appuntamento: null })
   }
@@ -280,40 +368,102 @@ export default function AgendaPanel() {
           <CalendarDots size={20} weight="light" />
           Agenda & Note
         </h1>
+        <div className={styles.headerRight}>
+          <div className={styles.vistaTabs}>
+            {viste.map(v => (
+              <button key={v.id} className={`btn-toggle ${vistaAttiva === v.id ? 'active' : ''}`} onClick={() => cambiaVista(v.id)}>
+                {v.label}
+              </button>
+            ))}
+          </div>
+          <button className={styles.btnAi} onClick={richiediSuggerimenti}>
+            <Sparkle size={15} weight="fill" />
+            <span className={styles.btnAiLabel}>Radar Festività</span>
+          </button>
+        </div>
       </div>
 
-      <div className={styles.layout}>
-        <FullCalendar
-            ref={calRef}
-            plugins={[dayGridPlugin, interactionPlugin]}
-            initialView="dayGridMonth"
-            locale={itLocale}
-            height="auto"
-            headerToolbar={{ left: 'prev', center: 'title', right: 'next' }}
-            events={[...festivitaLabels, ...appEvents]}
-            dateClick={handleDateClick}
-            eventClick={handleEventClick}
-            editable={false}
-            dayMaxEvents={3}
-          />
-        <div className={styles.legenda}>
-          <span className={styles.legendaItem}>
-            <span className={styles.legendaDot} style={{ background: 'rgba(160,114,42,0.5)' }} />
-            Festività
-          </span>
-          {TIPI.map(t => (
-            <span key={t} className={styles.legendaItem}>
-              <span className={styles.legendaDot} style={{ background: TIPO_COLORI[t] }} />
-              {t}
-            </span>
-          ))}
+      <div className={`${styles.contentLayout} ${aiAperto ? styles.contentLayoutAi : ''}`}>
+        <div className={styles.layout}>
+          <FullCalendar
+              ref={calRef}
+              plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
+              initialView={vistaAttiva}
+              locale={itLocale}
+              height="auto"
+              headerToolbar={{ left: 'prev', center: 'title', right: 'next' }}
+              events={[...festivitaLabels, ...appEvents]}
+              dateClick={handleDateClick}
+              eventClick={handleEventClick}
+              editable={false}
+              dayMaxEvents={3}
+              listDayFormat={{ weekday: 'long', day: 'numeric', month: 'long' }}
+              listDaySideFormat={false}
+              noEventsText="Nessun appuntamento"
+            />
         </div>
+
+        {aiAperto && (
+          <div className={styles.aiPanel}>
+            <div className={styles.aiHeader}>
+              <span className={styles.aiTitolo}><Sparkle size={14} weight="fill" /> Radar Festività</span>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                {!aiLoading && <button className="btn-icon" title="Rigenera" onClick={() => richiediSuggerimenti(true)}>↺</button>}
+                <button className="btn-icon" onClick={() => setAiAperto(false)}><IconClose size={14} /></button>
+              </div>
+            </div>
+            <div className={styles.aiBody}>
+              {aiLoading
+                ? <span className={styles.aiLoading}>Elaborazione in corso...</span>
+                : <>
+                    {aiSuggerimenti && aiSuggerimenti.length === 0 && aiIgnorate.length === 0 && (
+                      <span className={styles.aiLoading}>Nessuna festività scoperta nei prossimi 30 giorni.</span>
+                    )}
+                    {(aiSuggerimenti || []).map((s, i) => (
+                      <div key={i} className={styles.aiCard}>
+                        <p className={styles.aiTesto}><strong>{s.festivita}</strong> — {s.testo}</p>
+                        {(s.dataFestivita || s.evento?.data) && (() => {
+                          const f = faseSpons(s.dataFestivita || s.evento?.data)
+                          return (
+                            <div className={`${styles.faseBadge} ${styles[`faseBadge_${f.tipo}`]}`}>
+                              <span>{f.emoji} {f.label}</span>
+                              {f.sub && <span className={styles.faseSub}>{f.sub}</span>}
+                            </div>
+                          )
+                        })()}
+                        <div className={styles.aiActions}>
+                          <button className="btn-secondary" style={{ fontSize: '0.8rem', padding: '6px 12px' }} onClick={() => ignoraSuggerimento(i)}>Ignora</button>
+                          <button className="btn-primary" style={{ fontSize: '0.8rem', padding: '6px 12px' }} onClick={() => seguiConsiglio(s)}>+ Aggiungi</button>
+                        </div>
+                      </div>
+                    ))}
+                    {aiIgnorate.length > 0 && (
+                      <div className={styles.ignorateWrap}>
+                        <button className={styles.ignorateToggle} onClick={() => setIgnorateAperte(p => !p)}>
+                          {ignorateAperte ? '▲' : '▼'} Ignorate ({aiIgnorate.length})
+                        </button>
+                        {ignorateAperte && aiIgnorate.map((s, i) => (
+                          <div key={i} className={styles.aiCardIgnorata}>
+                            <p className={styles.aiTesto}><strong>{s.festivita}</strong> — {s.testo}</p>
+                            <div className={styles.aiActions}>
+                              <button className="btn-secondary" style={{ fontSize: '0.8rem', padding: '6px 12px' }} onClick={() => ripristinaSuggerimento(i)}>Ripristina</button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+              }
+            </div>
+          </div>
+        )}
       </div>
 
       {modal && (
         <ModalAppuntamento
           data={modal.data}
           appuntamento={modal.appuntamento}
+          prefill={modal.prefill}
           onSalva={handleSalva}
           onElimina={handleElimina}
           onClose={() => setModal(null)}

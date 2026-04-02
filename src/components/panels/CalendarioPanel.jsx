@@ -103,8 +103,8 @@ export default function CalendarioPanel() {
   }
 
   const viste = isMobile()
-    ? [{ id: 'listWeek', label: 'Settimana' }, { id: 'listMonth', label: 'Mese' }]
-    : [{ id: 'dayGridMonth', label: 'Mese' }, { id: 'timeGridWeek', label: 'Settimana' }]
+    ? [{ id: 'listDay', label: 'Giorno' }, { id: 'listWeek', label: 'Settimana' }, { id: 'listMonth', label: 'Mese' }]
+    : [{ id: 'dayGridMonth', label: 'Mese' }, { id: 'timeGridWeek', label: 'Settimana' }, { id: 'timeGridDay', label: 'Giorno' }]
 
   return (
     <div className={styles.panel}>
