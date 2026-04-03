@@ -85,7 +85,7 @@ exports.handler = async (event) => {
             'Timestamp':          new Date().toISOString(),
             'Consenso Privacy':   true,
             'Consenso Marketing': false,
-            'Evento':             'Telefono',
+            'Canale':             'Telefono',
           }
         })
       })
