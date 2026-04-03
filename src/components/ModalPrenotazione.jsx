@@ -127,7 +127,7 @@ export default function ModalPrenotazione({ prenotazione = null, onClose, onSucc
               <label>N° Persone <span className={styles.req}>*</span></label>
               <select value={form.persone} onChange={e => setForm(f => ({ ...f, persone: e.target.value }))}>
                 <option value="">—</option>
-                {[...Array(10)].map((_, i) => (
+                {[...Array(30)].map((_, i) => (
                   <option key={i+1} value={i+1}>{i+1} {i === 0 ? 'persona' : 'persone'}</option>
                 ))}
               </select>
