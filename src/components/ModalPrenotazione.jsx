@@ -20,6 +20,7 @@ export default function ModalPrenotazione({ prenotazione = null, onClose, onSucc
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [msg, setMsg] = useState(null)
+  const [forza, setForza] = useState(false)
 
   // Popola il form in modalità edit
   useEffect(() => {
@@ -138,13 +139,19 @@ export default function ModalPrenotazione({ prenotazione = null, onClose, onSucc
             </div>
 
             <div className={styles.field}>
-              <label>Orario <span className={styles.req}>*</span></label>
+              <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>Orario <span className={styles.req}>*</span></span>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 400, fontSize: '0.8rem', color: forza ? '#C0392B' : 'var(--text2)', cursor: 'pointer' }}>
+                  <input type="checkbox" checked={forza} onChange={e => setForza(e.target.checked)} style={{ accentColor: '#C0392B' }} />
+                  Forza (ignora al completo)
+                </label>
+              </label>
               <select value={form.ora} onChange={e => setForm(f => ({ ...f, ora: e.target.value }))} disabled={!form.data || loadingSlots}>
                 <option value="">{loadingSlots ? 'Caricamento...' : form.data ? 'Scegli orario' : 'Seleziona prima la data'}</option>
                 {slots.map(({ fascia, slots: s }) => (
                   <optgroup key={fascia} label={fascia}>
                     {s.map(slot => (
-                      <option key={slot.ora} value={slot.ora} disabled={slot.pieno && slot.ora !== form.ora}>
+                      <option key={slot.ora} value={slot.ora} disabled={slot.pieno && slot.ora !== form.ora && !forza}>
                         {slot.ora}{slot.pieno && slot.ora !== form.ora ? ' — al completo' : ''}
                       </option>
                     ))}

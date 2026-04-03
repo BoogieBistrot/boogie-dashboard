@@ -6,6 +6,7 @@ import listPlugin from '@fullcalendar/list'
 import interactionPlugin from '@fullcalendar/interaction'
 import itLocale from '@fullcalendar/core/locales/it'
 import { useAppuntamenti } from '../../hooks/useAppuntamenti'
+import { useMeteo } from '../../hooks/useMeteo'
 import { IconClose } from '../../icons/index.jsx'
 import { CalendarDots, Sparkle } from '@phosphor-icons/react'
 import { authFetch } from '../../lib/authFetch'
@@ -218,6 +219,7 @@ function faseSpons(dataEvento) {
 // ─── Pannello principale ─────────────────────────────────────────────────────
 export default function AgendaPanel() {
   const { appuntamenti, loading, aggiungi, aggiorna, elimina } = useAppuntamenti()
+  const { dati: meteo } = useMeteo()
   const [modal, setModal] = useState(null)
   const [vistaAttiva, setVistaAttiva] = useState(isMobile() ? 'listWeek' : 'dayGridMonth')
   const [aiAperto, setAiAperto] = useState(false)
@@ -245,10 +247,23 @@ export default function AgendaPanel() {
       return d >= oggi && d <= fraduemesi
     }).map(f => ({ date: f.date, title: f.title.replace(/\p{Emoji}/gu, '').trim() }))
     try {
+      const meteoPerData = {}
+      if (meteo) {
+        meteo.forEach(g => { meteoPerData[g.dateStr] = g })
+      }
+
+      const festivitaConMeteo = festFiltrate.map(f => {
+        const m = meteoPerData[f.date]
+        return {
+          ...f,
+          meteo: m ? { tMax: m.tMax, tMin: m.tMin, pioggia: m.pioggia, codice: m.codice } : null
+        }
+      })
+
       const res = await authFetch('/.netlify/functions/suggerisci-agenda', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ appuntamenti: appFiltrati, festivita: festFiltrate, dataOggi: oggi.toISOString().split('T')[0] })
+        body: JSON.stringify({ appuntamenti: appFiltrati, festivita: festivitaConMeteo, dataOggi: oggi.toISOString().split('T')[0] })
       })
       const json = await res.json()
       setAiSuggerimenti(Array.isArray(json.suggerimenti) ? json.suggerimenti : [])
@@ -271,7 +286,7 @@ export default function AgendaPanel() {
   }
 
   function seguiConsiglio(s) {
-    setModal({ data: s.evento.data, appuntamento: null, prefill: s.evento })
+    setModal({ data: s.dataFestivita, appuntamento: null, prefill: { title: s.festivita, data: s.dataFestivita, tipo: 'Appuntamento' } })
     ignoraSuggerimento(aiSuggerimenti.indexOf(s))
   }
 
@@ -421,6 +436,12 @@ export default function AgendaPanel() {
                     )}
                     {(aiSuggerimenti || []).map((s, i) => (
                       <div key={i} className={styles.aiCard}>
+                        {(s.categoria || s.meteo_mood) && (
+                          <div className={styles.aiMeta}>
+                            {s.categoria && <span className={styles.aiCategoria}>{s.categoria}</span>}
+                            {s.meteo_mood && <span className={styles.aiMeteo}>{s.meteo_mood}</span>}
+                          </div>
+                        )}
                         <p className={styles.aiTesto}><strong>{s.festivita}</strong> — {s.testo}</p>
                         {(s.dataFestivita || s.evento?.data) && (() => {
                           const f = faseSpons(s.dataFestivita || s.evento?.data)

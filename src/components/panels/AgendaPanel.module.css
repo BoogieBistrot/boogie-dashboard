@@ -49,6 +49,9 @@
   border-radius: var(--radius-sm); padding: 14px 16px;
   display: flex; flex-direction: column; gap: 10px;
 }
+.aiMeta { display: flex; gap: 6px; flex-wrap: wrap; }
+.aiCategoria { font-size: 0.72rem; font-weight: 600; background: var(--bg3); color: var(--text2); padding: 2px 8px; border-radius: 20px; }
+.aiMeteo { font-size: 0.72rem; font-weight: 600; background: rgba(21,101,192,0.08); color: #1565C0; padding: 2px 8px; border-radius: 20px; }
 .aiTesto { font-size: 0.9rem; color: var(--text); line-height: 1.6; margin: 0; }
 .aiSponsored { font-size: 0.8rem; color: var(--text2); margin: 0; }
 .faseBadge {
