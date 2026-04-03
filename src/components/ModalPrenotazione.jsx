@@ -184,6 +184,34 @@ export default function ModalPrenotazione({ prenotazione = null, onClose, onSucc
 
           <div className={styles.actions}>
             <button type="button" className="btn-secondary" onClick={onClose}>Annulla</button>
+            {isEdit && (
+              <button type="button" style={{ background: '#C0392B', color: '#fff', border: 'none', borderRadius: 'var(--radius-sm)', padding: '8px 16px', cursor: 'pointer', fontWeight: 600 }}
+                disabled={submitting || form.stato === 'Cancellata'}
+                onClick={async () => {
+                  setSubmitting(true)
+                  setMsg(null)
+                  try {
+                    const res = await authFetch(GESTISCI_URL, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ action: 'edit', id: prenotazione.id, ...form, stato: 'Cancellata' }),
+                    })
+                    const json = await res.json()
+                    if (json.success) {
+                      setMsg({ type: 'ok', text: 'Prenotazione cancellata' })
+                      setTimeout(() => { onSuccess?.(); onClose() }, 800)
+                    } else {
+                      setMsg({ type: 'err', text: 'Errore — riprova' })
+                    }
+                  } catch {
+                    setMsg({ type: 'err', text: 'Errore di connessione' })
+                  }
+                  setSubmitting(false)
+                }}
+              >
+                {form.stato === 'Cancellata' ? 'Già cancellata' : 'Cancella prenotazione'}
+              </button>
+            )}
             <button type="submit" className="btn-primary" disabled={submitting}>
               {submitting ? 'Salvataggio...' : isEdit ? 'Salva modifiche' : 'Inserisci prenotazione'}
             </button>
