@@ -46,19 +46,21 @@ function KpiCard({ label, value, sub, trend }) {
 }
 
 function BarChart({ items, maxVal }) {
-  const max = maxVal ?? Math.max(...items.map(i => i.value), 1)
+  const max = maxVal ?? Math.max(...items.filter(i => !i.closed).map(i => i.value), 1)
   return (
     <div className={styles.barChart}>
-      {items.map(({ label, value, accent }) => (
-        <div key={label} className={styles.barRow}>
+      {items.map(({ label, value, accent, closed }) => (
+        <div key={label} className={`${styles.barRow} ${closed ? styles.barRowClosed : ''}`}>
           <div className={styles.barLabel}>{label}</div>
           <div className={styles.barTrack}>
-            <div
-              className={`${styles.barFill} ${accent ? styles.barAccent : ''}`}
-              style={{ width: `${Math.round((value / max) * 100)}%` }}
-            />
+            {!closed && (
+              <div
+                className={`${styles.barFill} ${accent ? styles.barAccent : ''}`}
+                style={{ width: `${Math.round((value / max) * 100)}%` }}
+              />
+            )}
           </div>
-          <div className={styles.barValue}>{value}</div>
+          <div className={styles.barValue}>{closed ? 'chiuso' : value}</div>
         </div>
       ))}
     </div>
@@ -148,6 +150,22 @@ function LineChart({ settimane }) {
   )
 }
 
+function AnalisiAI({ testo, titolo }) {
+  if (!testo) return null
+  const paragrafi = testo.split('\n').filter(Boolean)
+  return (
+    <div className={styles.analisiAi}>
+      <div className={styles.analisiAiHeader}>
+        <span className={styles.analisiAiIcon}>✦</span>
+        <span className={styles.analisiAiTitolo}>{titolo || 'Analisi AI'}</span>
+      </div>
+      <div className={styles.analisiAiBody}>
+        {paragrafi.map((p, i) => <p key={i}>{p}</p>)}
+      </div>
+    </div>
+  )
+}
+
 function InsightChip({ label, value }) {
   return (
     <div className={styles.insightChip}>
@@ -163,14 +181,23 @@ function vsMedia(value, media) {
 }
 
 // — Vista settimana singola
+const GIORNI_NOME_FULL = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato']
+// Mappa da nome abbreviato (Mon-first) al nome completo
+const GIORNI_TO_NOME = ['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato','Domenica']
+
 function VistaSettimana({ s, medie }) {
+  const chiusiSet = new Set(s.giorniChiusi ? s.giorniChiusi.split(', ') : [])
   const totaleCoperti = s.copertipranzo + s.copertiAperitivo + s.copertiCena
   const fasceBarre = [
     { label: 'Pranzo',    value: s.copertipranzo },
     { label: 'Aperitivo', value: s.copertiAperitivo },
     { label: 'Cena',      value: s.copertiCena, accent: true },
   ]
-  const giorniBarre = GIORNI.map((label, i) => ({ label, value: s[GIORNI_KEYS[i]] }))
+  const giorniBarre = GIORNI.map((label, i) => ({
+    label,
+    value: s[GIORNI_KEYS[i]],
+    closed: chiusiSet.has(GIORNI_TO_NOME[i]),
+  }))
   const canaliPie = [
     { label: 'Sito web',  value: s.prenotazioniSito },
     { label: 'Telefono',  value: s.prenotazioniTel },
@@ -223,6 +250,7 @@ function VistaSettimana({ s, medie }) {
           <PieChart items={canaliPie} />
         </div>
       </div>
+      <AnalisiAI testo={s.analisiAi} titolo="Analisi della settimana" />
     </>
   )
 }
@@ -248,13 +276,20 @@ function VistaGlobale({ settimane }) {
   const totCena      = sum(settimane.map(s => s.copertiCena))
   const totCoperti   = totPranzo + totAperitivo + totCena
 
-  const mediaGiorni = GIORNI.map((label, i) => ({
-    label,
-    value: avg(settimane.map(s => s[GIORNI_KEYS[i]])),
-  }))
+  // Media per giorno ponderata: esclude le settimane in cui quel giorno era chiuso
+  const mediaGiorni = GIORNI.map((label, i) => {
+    const nomeCompleto = GIORNI_TO_NOME[i]
+    const settimaneAperte = settimane.filter(s => !s.giorniChiusi?.split(', ').includes(nomeCompleto))
+    return {
+      label,
+      value: avg(settimaneAperte.map(s => s[GIORNI_KEYS[i]])),
+    }
+  })
 
-  const giornoFrequente     = mode(settimane.map(s => s.giornopiuPieno))
-  const giornoVuoto         = mode(settimane.map(s => s.giornopiuVuoto))
+  // Normalizza il giorno rimuovendo eventuale festività tra parentesi per il mode
+  const normalizzaGiorno = v => v ? v.replace(/\s*\(.*\)/, '').trim() : v
+  const giornoFrequente     = mode(settimane.map(s => normalizzaGiorno(s.giornopiuPieno)))
+  const giornoVuoto         = mode(settimane.map(s => normalizzaGiorno(s.giornopiuVuoto)))
   const slotFrequente       = mode(settimane.map(s => s.slotPiu))
   const fasciaPocoRichiesta = mode(settimane.map(s => s.fasciaMenoRichiesta))
   const mediaLastMinute     = avg(settimane.map(s => s.lastMinute))
@@ -282,6 +317,16 @@ function VistaGlobale({ settimane }) {
         <KpiCard label="Dim. media gruppo"       value={mediaDimGruppo} sub="persone" />
         <KpiCard label="Clienti unici/sett."     value={mediaClienti} sub={mediaClientiRitorno > 0 ? `media ${mediaClientiRitorno} di ritorno` : undefined} />
       </div>
+      <div className={`${styles.card} ${styles.cardFullWidth}`}>
+        <div className={styles.cardTitle}>Pattern ricorrenti</div>
+        <div className={styles.insightsGrid}>
+          <InsightChip label="Giorno più pieno (freq.)"   value={giornoFrequente} />
+          <InsightChip label="Giorno più vuoto (freq.)"   value={giornoVuoto} />
+          <InsightChip label="Slot più richiesto (freq.)" value={slotFrequente} />
+          <InsightChip label="Fascia meno richiesta"      value={fasciaPocoRichiesta} />
+          <InsightChip label="Media last minute/sett."    value={`${mediaLastMinute} pren.`} />
+        </div>
+      </div>
       <div className={styles.chartsGrid}>
         <div className={styles.card}>
           <div className={styles.cardTitle}>Coperti per fascia — totale</div>
@@ -302,16 +347,6 @@ function VistaGlobale({ settimane }) {
           <div className={styles.cardTitle}>Canale di prenotazione — totale</div>
           <PieChart items={canaliPie} />
         </div>
-        <div className={styles.card}>
-          <div className={styles.cardTitle}>Pattern ricorrenti</div>
-          <div className={styles.insightsGrid}>
-            <InsightChip label="Giorno più pieno (freq.)"   value={giornoFrequente} />
-            <InsightChip label="Giorno più vuoto (freq.)"   value={giornoVuoto} />
-            <InsightChip label="Slot più richiesto (freq.)" value={slotFrequente} />
-            <InsightChip label="Fascia meno richiesta"      value={fasciaPocoRichiesta} />
-            <InsightChip label="Media last minute/sett."    value={`${mediaLastMinute} pren.`} />
-          </div>
-        </div>
       </div>
       {settimane.length > 1 && (
         <div className={`${styles.card} ${styles.cardFullWidth}`}>
@@ -319,6 +354,7 @@ function VistaGlobale({ settimane }) {
           <LineChart settimane={settimane} />
         </div>
       )}
+      <AnalisiAI testo={settimane[0]?.analisiAiGlobale} titolo="Analisi globale" />
     </>
   )
 }

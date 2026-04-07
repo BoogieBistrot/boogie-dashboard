@@ -247,6 +247,17 @@
   text-align: right;
 }
 
+.barRowClosed .barLabel,
+.barRowClosed .barValue {
+  color: var(--text3);
+  font-weight: 400;
+}
+
+.barRowClosed .barTrack {
+  background: var(--bg3);
+  opacity: 0.4;
+}
+
 .cardFooter {
   display: flex;
   gap: 12px;
@@ -342,6 +353,48 @@
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--text);
+}
+
+/* Analisi AI */
+.analisiAi {
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 22px 26px;
+  background: color-mix(in srgb, var(--accent) 4%, var(--bg2));
+}
+
+.analisiAiHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.analisiAiIcon {
+  color: var(--accent);
+  font-size: 0.9rem;
+}
+
+.analisiAiTitolo {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.analisiAiBody {
+  font-size: 0.9rem;
+  line-height: 1.75;
+  color: var(--text2);
+}
+
+.analisiAiBody p {
+  margin: 0 0 10px;
+}
+
+.analisiAiBody p:last-child {
+  margin-bottom: 0;
 }
 
 @media (max-width: 860px) {

@@ -68,6 +68,9 @@ exports.handler = async (event) => {
         clientiDiRitorno:    r.fields['Clienti di ritorno'] || 0,
         lastMinute:          r.fields['Prenotazioni last minute'] || 0,
         mediaCopertiGiorno:  r.fields['Media coperti per giorno'] || 0,
+        giorniChiusi:        r.fields['Giorni chiusi'] || '',
+        analisiAi:           r.fields['Analisi AI'] || '',
+        analisiAiGlobale:    r.fields['Analisi AI Globale'] || '',
         trendPrenotazioni:   trendPren != null ? parseFloat(String(trendPren).replace('%', '')) : null,
         trendPersone:        trendPers != null ? parseFloat(String(trendPers).replace('%', '')) : null,
       }
