@@ -127,7 +127,7 @@ function LineChart({ settimane }) {
   ].join(' ')
   const gridVals = [minV, Math.round((minV + maxV) / 2), maxV]
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className={styles.lineSvg} preserveAspectRatio="none">
+    <svg viewBox={`0 0 ${W} ${H}`} className={styles.lineSvg} preserveAspectRatio="xMidYMid meet">
       {gridVals.map(v => (
         <g key={v}>
           <line x1={padL} y1={yPos(v).toFixed(1)} x2={W - padR} y2={yPos(v).toFixed(1)} stroke="var(--border)" strokeWidth="1" />
@@ -157,8 +157,13 @@ function InsightChip({ label, value }) {
   )
 }
 
+function vsMedia(value, media) {
+  if (!media || media === 0) return null
+  return Math.round((value - media) / media * 1000) / 10
+}
+
 // — Vista settimana singola
-function VistaSettimana({ s }) {
+function VistaSettimana({ s, medie }) {
   const totaleCoperti = s.copertipranzo + s.copertiAperitivo + s.copertiCena
   const fasceBarre = [
     { label: 'Pranzo',    value: s.copertipranzo },
@@ -170,11 +175,17 @@ function VistaSettimana({ s }) {
     { label: 'Sito web',  value: s.prenotazioniSito },
     { label: 'Telefono',  value: s.prenotazioniTel },
   ]
+  const fmt = d => { const [, m, g] = d.split('-'); return `${g}/${m}` }
+  const periodoLabel = s.dataInizio
+    ? `Settimana dal ${fmt(s.dataInizio)} al ${fmt(s.dataFine)}`
+    : s.settimana
+
   return (
     <>
+      <div className={styles.periodoLabel}>{periodoLabel}</div>
       <div className={styles.kpiGrid}>
-        <KpiCard label="Prenotazioni"      value={s.prenotazioni} trend={s.trendPrenotazioni} />
-        <KpiCard label="Coperti totali"    value={s.persone} trend={s.trendPersone} />
+        <KpiCard label="Prenotazioni"      value={s.prenotazioni} trend={vsMedia(s.prenotazioni, medie?.prenotazioni)} />
+        <KpiCard label="Coperti totali"    value={s.persone} trend={vsMedia(s.persone, medie?.persone)} />
         <KpiCard label="Cancellazioni"     value={`${s.tassoCancellazione}%`} sub={`${s.cancellazioni} tot.`} />
         <KpiCard label="Anticipo medio prenotazione" value={`${s.leadTime}g`} sub="giorni prima dell'arrivo" />
         <KpiCard label="Dim. media gruppo" value={s.dimGruppo} sub="persone" />
@@ -318,6 +329,10 @@ export default function AnalyticsPanel() {
   const [idx, setIdx] = useState(0)
 
   const s = settimane[Math.min(idx, settimane.length - 1)] || null
+  const medie = settimane.length > 1 ? {
+    prenotazioni: avg(settimane.map(s => s.prenotazioni)),
+    persone:      avg(settimane.map(s => s.persone)),
+  } : null
 
   return (
     <div className={styles.panel}>
@@ -327,6 +342,19 @@ export default function AnalyticsPanel() {
           Analytics
         </h1>
         <div className={styles.headerRight}>
+          {vista === 'settimana' && settimane.length > 0 && (
+            <select
+              className={styles.weekSelect}
+              value={idx}
+              onChange={e => setIdx(Number(e.target.value))}
+            >
+              {settimane.map((s, i) => (
+                <option key={s.settimana} value={i}>
+                  {i === 0 ? `Ultima (${formatWeekLabel(s)})` : formatWeekLabel(s)}
+                </option>
+              ))}
+            </select>
+          )}
           {settimane.length > 0 && (
             <div className={styles.vistaToggle}>
               <button
@@ -343,19 +371,6 @@ export default function AnalyticsPanel() {
               </button>
             </div>
           )}
-          {vista === 'settimana' && settimane.length > 0 && (
-            <select
-              className={styles.weekSelect}
-              value={idx}
-              onChange={e => setIdx(Number(e.target.value))}
-            >
-              {settimane.map((s, i) => (
-                <option key={s.settimana} value={i}>
-                  {i === 0 ? `Ultima (${formatWeekLabel(s)})` : formatWeekLabel(s)}
-                </option>
-              ))}
-            </select>
-          )}
         </div>
       </div>
 
@@ -367,7 +382,7 @@ export default function AnalyticsPanel() {
 
       {!loading && settimane.length > 0 && (
         <div className={styles.body}>
-          {vista === 'settimana' && s && <VistaSettimana s={s} />}
+          {vista === 'settimana' && s && <VistaSettimana s={s} medie={medie} />}
           {vista === 'globale' && <VistaGlobale settimane={settimane} />}
         </div>
       )}

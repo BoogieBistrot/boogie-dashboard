@@ -16,7 +16,7 @@ const EMPTY_FORM = {
 
 export default function ModalPrenotazione({ prenotazione = null, onClose, onSuccess }) {
   const isEdit = !!prenotazione
-  const { tag: tagDisponibili } = useTag()
+  const { tag: tagDisponibili, loading: tagLoading } = useTag()
   const [form, setForm] = useState(EMPTY_FORM)
   const [slots, setSlots] = useState([])
   const [loadingSlots, setLoadingSlots] = useState(false)
@@ -182,6 +182,8 @@ export default function ModalPrenotazione({ prenotazione = null, onClose, onSucc
             <div className={`${styles.field} ${styles.full}`}>
               <label>Tag <span style={{ fontWeight: 400, color: 'var(--text3)', fontSize: '0.72rem' }}>— non visibile al cliente</span></label>
               <div className={styles.tagsRow}>
+                {tagLoading && <span style={{ fontSize: '0.8rem', color: 'var(--text3)' }}>Caricamento...</span>}
+                {!tagLoading && tagDisponibili.length === 0 && <span style={{ fontSize: '0.8rem', color: 'var(--text3)', fontStyle: 'italic' }}>Nessun tag disponibile</span>}
                 {tagDisponibili.map(t => (
                   <label key={t.id} className={styles.tagChip}>
                     <input

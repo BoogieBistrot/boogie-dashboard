@@ -92,6 +92,11 @@
 }
 .toggleOn .toggleDot { background: #2E7D32; }
 
+.toggleLocked { cursor: pointer; }
+.lockIconSmall { opacity: 0.6; flex-shrink: 0; color: var(--text2); }
+
+.fasciaCardLocked { cursor: pointer; }
+
 .cellsRow { display: contents; }
 
 .lockOverlay {
@@ -138,12 +143,12 @@
 @media (max-width: 720px) {
   .fasceRow { grid-template-columns: 1fr; }
 
-  .gridWrap { overflow-y: auto; max-height: 60vh; }
+  .gridWrap {}
 
   /* Header sticky con nomi fasce */
   .gridHeader {
     display: flex;
-    position: sticky; top: 0; z-index: 5;
+    position: sticky; top: 52px; z-index: 5;
     background: var(--bg);
     padding: 8px 0 6px;
     border-bottom: var(--border-style);

@@ -181,20 +181,12 @@ export default function OrariPanel() {
         </div>
       </div>
 
-      <div className={styles.body} style={{ position: 'relative' }}>
-        {!editEnabled && (
-          <div
-            className={styles.lockOverlay}
-            onClick={() => setLockModalOpen(true)}
-            title="Abilita modifica per modificare gli orari"
-          >
-            <IconLock size={48} className={styles.lockIcon} />
-          </div>
-        )}
+      <div className={styles.body}>
         {/* — Orari per fascia — */}
         <div className={styles.fasceRow}>
           {FASCE.map(f => (
-            <div key={f} className={styles.fasciaCard}>
+            <div key={f} className={`${styles.fasciaCard} ${!editEnabled ? styles.fasciaCardLocked : ''}`}
+              onClick={() => !editEnabled && setLockModalOpen(true)}>
               <div className={styles.fasciaCardTitle}>{f}</div>
               <div className={styles.fasciaCardFields}>
                 <div className={styles.timeField}>
@@ -236,11 +228,13 @@ export default function OrariPanel() {
                     <div key={f} className={styles.cell}>
                       <button
                         type="button"
-                        className={`${styles.toggleBtn} ${cell.attivo ? styles.toggleOn : ''}`}
-                        disabled={!editEnabled}
-                        onClick={() => toggleCell(key)}
+                        className={`${styles.toggleBtn} ${cell.attivo ? styles.toggleOn : ''} ${!editEnabled ? styles.toggleLocked : ''}`}
+                        onClick={() => editEnabled ? toggleCell(key) : setLockModalOpen(true)}
                       >
-                        <span className={styles.toggleDot} />
+                        {!editEnabled
+                          ? <IconLock size={13} className={styles.lockIconSmall} />
+                          : <span className={styles.toggleDot} />
+                        }
                         {cell.attivo ? 'Aperto' : 'Chiuso'}
                       </button>
                     </div>

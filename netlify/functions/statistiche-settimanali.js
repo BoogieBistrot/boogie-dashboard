@@ -3,10 +3,12 @@
 // Manual trigger: POST con body { "secret": "<STATS_SECRET>" }
 // Rebuild:        POST con body { "secret": "<STATS_SECRET>", "rebuildAll": true }
 
-const AIRTABLE_TOKEN   = process.env.AIRTABLE_TOKEN
-const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID
-const AIRTABLE_TABLE   = process.env.AIRTABLE_TABLE || 'Prenotazioni'
-const STATS_TABLE      = 'tblQL9VX6Zx35yta5'
+const AIRTABLE_TOKEN    = process.env.AIRTABLE_TOKEN
+const AIRTABLE_BASE_ID  = process.env.AIRTABLE_BASE_ID
+const AIRTABLE_TABLE    = process.env.AIRTABLE_TABLE    || 'Prenotazioni'
+const AIRTABLE_ORARI    = process.env.AIRTABLE_ORARI    || 'Orari'
+const AIRTABLE_CHIUSURE = process.env.AIRTABLE_CHIUSURE || 'Chiusure'
+const STATS_TABLE       = 'tblQL9VX6Zx35yta5'
 const BASE             = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}`
 const AT_HEADERS       = { 'Authorization': `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' }
 
@@ -114,9 +116,81 @@ async function getAllWeeksFromPrenotazioni() {
   return Object.values(weekMap).sort((a, b) => a.mon - b.mon)
 }
 
+// Se il giorno più pieno cade su un'apertura straordinaria, restituisce la descrizione
+function getFestivita(weekday, mon, chiusure) {
+  const d = new Date(mon)
+  while (d.getDay() !== weekday) d.setDate(d.getDate() + 1)
+  const dateStr = formatDate(d)
+  return chiusure.find(c =>
+    c.tipo === 'Data specifica' &&
+    c.tipoApertura === 'Apertura straordinaria' &&
+    c.dataInizio && c.dataFine &&
+    dateStr >= c.dataInizio && dateStr <= c.dataFine
+  )?.descrizione || null
+}
+
+// Recupera orari e chiusure da Airtable
+async function fetchOrariEChiusure() {
+  const [resOrari, resChiusure] = await Promise.all([
+    fetch(`${BASE}/${encodeURIComponent(AIRTABLE_ORARI)}`, { headers: AT_HEADERS }),
+    fetch(`${BASE}/${encodeURIComponent(AIRTABLE_CHIUSURE)}`, { headers: AT_HEADERS }),
+  ])
+  const [jsonOrari, jsonChiusure] = await Promise.all([resOrari.json(), resChiusure.json()])
+
+  const orari = (jsonOrari.records || []).map(r => ({
+    giorno: Array.isArray(r.fields['Giorni']) ? parseInt(r.fields['Giorni'][0]) : null,
+    attivo: r.fields['Attivo'] || false,
+  }))
+  const chiusure = (jsonChiusure.records || []).map(r => ({
+    descrizione:  r.fields['Descrizione'] || '',
+    tipo:         r.fields['Tipo'] || '',
+    tipoApertura: r.fields['Tipo apertura'] || 'Chiusura',
+    giorno:       r.fields['Giorno'] != null ? r.fields['Giorno'] : null,
+    dataInizio:   r.fields['Data inizio'] || '',
+    dataFine:     r.fields['Data fine'] || '',
+  }))
+  return { orari, chiusure }
+}
+
+// Restituisce un Set con i numeri dei giorni aperti (0=Dom … 6=Sab) per la settimana data
+function getGiorniAperti(mon, sun, orari, chiusure) {
+  const aperti = new Set()
+  const d = new Date(mon)
+  while (d <= sun) {
+    const weekday = d.getDay()
+    const dateStr = formatDate(d)
+
+    // 1. Base: aperto se esiste almeno un orario attivo per questo giorno
+    let isOpen = orari.some(o => o.giorno === weekday && o.attivo)
+
+    // 2. Chiusure ricorrenti (override base)
+    const ricorrente = chiusure.find(c => c.tipo === 'Giorno ricorrente' && c.tipoApertura === 'Chiusura' && c.giorno === weekday)
+    if (ricorrente) isOpen = false
+
+    // 3. Regole su data specifica (priorità massima)
+    for (const c of chiusure) {
+      if (c.tipo === 'Data specifica' && c.dataInizio && c.dataFine) {
+        if (dateStr >= c.dataInizio && dateStr <= c.dataFine) {
+          isOpen = c.tipoApertura === 'Apertura straordinaria'
+        }
+      }
+    }
+
+    if (isOpen) aperti.add(weekday)
+    d.setDate(d.getDate() + 1)
+  }
+  return aperti
+}
+
 // Calcola e salva le statistiche per una settimana
 // prevStats: { prenotazioni, persone } della settimana precedente (per il trend)
 async function calcAndSaveWeek(dataInizio, dataFine, settimana, prevStats) {
+  const mon = new Date(dataInizio + 'T12:00:00')
+  const sun = new Date(dataFine   + 'T12:00:00')
+
+  const { orari, chiusure } = await fetchOrariEChiusure()
+  const giorniAperti = getGiorniAperti(mon, sun, orari, chiusure)
+
   const formula = encodeURIComponent(
     `AND(DATETIME_FORMAT({Data},'YYYY-MM-DD') >= "${dataInizio}", DATETIME_FORMAT({Data},'YYYY-MM-DD') <= "${dataFine}")`
   )
@@ -167,9 +241,17 @@ async function calcAndSaveWeek(dataInizio, dataFine, settimana, prevStats) {
     const d = new Date(p.data + 'T12:00:00')
     if (!isNaN(d)) perGiorno[d.getDay()]++
   })
-  const giorniSorted = Object.entries(perGiorno).sort((a, b) => b[1] - a[1])
-  const giornopiuPieno = GIORNI_NOME[giorniSorted[0][0]]
-  const giornopiuVuoto = GIORNI_NOME[giorniSorted[giorniSorted.length - 1][0]]
+  // Solo giorni aperti per pieno/vuoto e media
+  const giorniApertiEntries = Object.entries(perGiorno).filter(([wd]) => giorniAperti.has(parseInt(wd)))
+  const giorniSorted = giorniApertiEntries.length > 0
+    ? giorniApertiEntries.sort((a, b) => b[1] - a[1])
+    : Object.entries(perGiorno).sort((a, b) => b[1] - a[1])
+  const weekdayPieno = parseInt(giorniSorted[0][0])
+  const festivita = getFestivita(weekdayPieno, mon, chiusure)
+  const giornopiuPieno = festivita
+    ? `${GIORNI_NOME[weekdayPieno]} (${festivita})`
+    : GIORNI_NOME[weekdayPieno]
+  const giornopiuVuoto = GIORNI_NOME[parseInt(giorniSorted[giorniSorted.length - 1][0])]
 
   const perFascia = { Pranzo: { pren: 0, coperti: 0 }, Aperitivo: { pren: 0, coperti: 0 }, Cena: { pren: 0, coperti: 0 } }
   totali.forEach(p => {
@@ -212,9 +294,8 @@ async function calcAndSaveWeek(dataInizio, dataFine, settimana, prevStats) {
     return Math.round((data - ts) / 86400000) <= 1
   }).length
 
-  const giorniConPren = Object.values(perGiorno).filter(v => v > 0).length
-  const mediaCopertiGiorno = giorniConPren > 0
-    ? Math.round((totPersone / giorniConPren) * 10) / 10 : 0
+  const nGiorniAperti = giorniAperti.size || 1
+  const mediaCopertiGiorno = Math.round((totPersone / nGiorniAperti) * 10) / 10
 
   const trendPrenotazioni = calcTrend(totPrenotazioni, prevStats?.prenotazioni)
   const trendPersone      = calcTrend(totPersone, prevStats?.persone)
