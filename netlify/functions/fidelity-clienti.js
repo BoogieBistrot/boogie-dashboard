@@ -44,25 +44,16 @@ exports.handler = async (event) => {
       offset += limit;
     }
 
-    // Fetch attributi per ogni contatto
-    const clientiPromises = tuttiContatti.map(async c => {
-      try {
-        const r = await fetch(`https://api.brevo.com/v3/contacts/${encodeURIComponent(c.email)}`, { headers: brevoHeaders });
-        if (!r.ok) return null;
-        const contact = await r.json();
-        if (!contact.attributes?.ISCRITTO_FIDELITY) return null;
-        return {
-          email: contact.email,
-          nome: contact.attributes?.FIRSTNAME || '',
-          cognome: contact.attributes?.LASTNAME || '',
-          punti: parseInt(contact.attributes?.PUNTI_FIDELITY) || 0,
-          dataIscrizione: contact.attributes?.DATA_ISCRIZIONE_FIDELITY || '',
-        };
-      } catch { return null; }
-    });
-
-    const risultati = await Promise.all(clientiPromises);
-    let clienti = risultati.filter(c => c !== null);
+    // Gli attributi sono già inclusi nella risposta della lista
+    let clienti = tuttiContatti
+      .filter(c => c.attributes?.ISCRITTO_FIDELITY)
+      .map(c => ({
+        email: c.email,
+        nome: c.attributes?.FIRSTNAME || '',
+        cognome: c.attributes?.LASTNAME || '',
+        punti: parseInt(c.attributes?.PUNTI_FIDELITY) || 0,
+        dataIscrizione: c.attributes?.DATA_ISCRIZIONE_FIDELITY || '',
+      }));
 
     // Filtra per ricerca parziale se c'è un parametro q
     if (q) {
