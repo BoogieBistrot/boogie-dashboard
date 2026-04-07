@@ -67,12 +67,21 @@ DATI SETTIMANA:
 - Slot più richiesto: ${s.slotPiuRichiesto} — fascia meno richiesta: ${s.fasciaMenoRichiesta}
 - Prenotazioni last minute (stesso giorno o giorno prima): ${s.lastMinute}
 
-Scrivi esattamente 3 paragrafi senza titoli e senza elenchi puntati:
-1. Panoramica generale della settimana
-2. Comportamenti dei clienti (orari, gruppi, canali, fidelizzazione)
-3. Un consiglio pratico e specifico per la prossima settimana
+Rispondi SOLO con questo formato esatto, senza introduzioni né conclusioni:
 
-Massimo 180 parole totali. Tono professionale e diretto.`)
+✅ PUNTI POSITIVI
+• [punto]
+• [punto]
+
+⚠️ CRITICITÀ
+• [punto]
+• [punto]
+
+💡 OPPORTUNITÀ PER LA PROSSIMA SETTIMANA
+• [azione concreta]
+• [azione concreta]
+
+Massimo 2-3 bullet per sezione. Ogni bullet massimo 15 parole. Tono diretto e pratico.`)
 }
 
 async function generateGlobalAnalysis(settimane) {
@@ -100,12 +109,21 @@ PATTERN RICORRENTI:
 - Slot più richiesto: ${mode(settimane.map(s=>s.slotPiuRichiesto))}
 - Fascia meno richiesta: ${mode(settimane.map(s=>s.fasciaMenoRichiesta))}
 
-Scrivi esattamente 3 paragrafi senza titoli e senza elenchi puntati:
-1. Valutazione dell'andamento generale del periodo
-2. Pattern di comportamento dei clienti e trend emergenti
-3. Due azioni strategiche concrete per migliorare le performance
+Rispondi SOLO con questo formato esatto, senza introduzioni né conclusioni:
 
-Massimo 200 parole totali. Tono professionale e strategico.`)
+✅ PUNTI DI FORZA DEL PERIODO
+• [punto]
+• [punto]
+
+⚠️ CRITICITÀ RICORRENTI
+• [punto]
+• [punto]
+
+💡 AZIONI STRATEGICHE
+• [azione concreta]
+• [azione concreta]
+
+Massimo 2-3 bullet per sezione. Ogni bullet massimo 15 parole. Tono diretto e strategico.`)
 }
 
 async function sendNewsletter(analisiWeek, analisiGlobal, s, nSettimane) {

@@ -152,7 +152,7 @@ function LineChart({ settimane }) {
 
 function AnalisiAI({ testo, titolo }) {
   if (!testo) return null
-  const paragrafi = testo.split('\n').filter(Boolean)
+  const righe = testo.split('\n').filter(Boolean)
   return (
     <div className={styles.analisiAi}>
       <div className={styles.analisiAiHeader}>
@@ -160,7 +160,11 @@ function AnalisiAI({ testo, titolo }) {
         <span className={styles.analisiAiTitolo}>{titolo || 'Analisi AI'}</span>
       </div>
       <div className={styles.analisiAiBody}>
-        {paragrafi.map((p, i) => <p key={i}>{p}</p>)}
+        {righe.map((r, i) => {
+          if (r.startsWith('•')) return <div key={i} className={styles.analisiAiBullet}>{r}</div>
+          if (r.match(/^[✅⚠️💡]/u)) return <div key={i} className={styles.analisiAiSezione}>{r}</div>
+          return <p key={i}>{r}</p>
+        })}
       </div>
     </div>
   )
@@ -210,6 +214,7 @@ function VistaSettimana({ s, medie }) {
   return (
     <>
       <div className={styles.periodoLabel}>{periodoLabel}</div>
+      <AnalisiAI testo={s.analisiAi} titolo="Analisi della settimana" />
       <div className={styles.kpiGrid}>
         <KpiCard label="Prenotazioni"      value={s.prenotazioni} trend={vsMedia(s.prenotazioni, medie?.prenotazioni)} />
         <KpiCard label="Coperti totali"    value={s.persone} trend={vsMedia(s.persone, medie?.persone)} />
@@ -250,7 +255,6 @@ function VistaSettimana({ s, medie }) {
           <PieChart items={canaliPie} />
         </div>
       </div>
-      <AnalisiAI testo={s.analisiAi} titolo="Analisi della settimana" />
     </>
   )
 }
@@ -309,6 +313,7 @@ function VistaGlobale({ settimane }) {
       <div className={styles.globaleNote}>
         Media su <strong>{n} settimane</strong> di dati raccolti
       </div>
+      <AnalisiAI testo={settimane[0]?.analisiAiGlobale} titolo="Analisi globale" />
       <div className={styles.kpiGrid}>
         <KpiCard label="Media pren./settimana"   value={mediaPrenotazioni} />
         <KpiCard label="Media coperti/settimana" value={mediaCoperti} />
@@ -354,7 +359,6 @@ function VistaGlobale({ settimane }) {
           <LineChart settimane={settimane} />
         </div>
       )}
-      <AnalisiAI testo={settimane[0]?.analisiAiGlobale} titolo="Analisi globale" />
     </>
   )
 }
