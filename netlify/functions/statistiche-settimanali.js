@@ -592,30 +592,13 @@ exports.handler = async (event) => {
 
       const results = []
       let prevStats = null
-      let lastRecordId = null
       for (const w of weeks) {
         const dataInizio = formatDate(w.mon)
         const dataFine   = formatDate(w.sun)
         console.log(`[REBUILD] Calcolo ${w.label} (${dataInizio} → ${dataFine})`)
         const result = await calcAndSaveWeek(dataInizio, dataFine, w.label, prevStats)
-        prevStats    = result
-        lastRecordId = result.recordId
-        // Analisi AI settimanale per ogni settimana
-        try {
-          const analisiWeek = await generateWeeklyAnalysis(result.statsForAI)
-          await patchStatRecord(result.recordId, { 'Analisi AI': analisiWeek })
-          console.log(`[REBUILD] Analisi AI salvata per ${w.label}`)
-        } catch (e) { console.error(`[REBUILD] Analisi AI fallita per ${w.label}:`, e.message) }
+        prevStats = result
         results.push(w.label)
-      }
-      // Analisi globale sull'ultimo record
-      if (lastRecordId) {
-        try {
-          const tutteSettimane = await fetchAllStatsRecords()
-          const analisiGlobal  = await generateGlobalAnalysis(tutteSettimane)
-          await patchStatRecord(lastRecordId, { 'Analisi AI Globale': analisiGlobal })
-          console.log('[REBUILD] Analisi AI Globale salvata')
-        } catch (e) { console.error('[REBUILD] Analisi AI Globale fallita:', e.message) }
       }
 
       return {
