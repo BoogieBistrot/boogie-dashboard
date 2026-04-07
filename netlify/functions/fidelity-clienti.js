@@ -22,19 +22,27 @@ exports.handler = async (event) => {
   };
 
   try {
-    // Carica tutti gli iscritti fidelity
     const BREVO_LIST_ID = parseInt(process.env.BREVO_LIST_ID) || 3;
-    const res = await fetch(`https://api.brevo.com/v3/contacts?limit=100&sort=desc`, {
-      headers: brevoHeaders
-    });
 
-    if (!res.ok) {
-      console.error('Brevo list error:', res.status, await res.text());
-      return { statusCode: 500, headers, body: JSON.stringify({ success: false }) };
+    // Carica tutti i contatti dalla lista fidelity con paginazione
+    let tuttiContatti = [];
+    let offset = 0;
+    const limit = 500;
+    while (true) {
+      const res = await fetch(
+        `https://api.brevo.com/v3/contacts/lists/${BREVO_LIST_ID}/contacts?limit=${limit}&offset=${offset}&sort=desc`,
+        { headers: brevoHeaders }
+      );
+      if (!res.ok) {
+        console.error('Brevo list error:', res.status, await res.text());
+        return { statusCode: 500, headers, body: JSON.stringify({ success: false }) };
+      }
+      const json = await res.json();
+      const batch = json.contacts || [];
+      tuttiContatti = tuttiContatti.concat(batch);
+      if (batch.length < limit) break;
+      offset += limit;
     }
-
-    const json = await res.json();
-    const tuttiContatti = json.contacts || [];
 
     // Fetch attributi per ogni contatto
     const clientiPromises = tuttiContatti.map(async c => {
