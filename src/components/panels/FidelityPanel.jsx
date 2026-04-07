@@ -7,6 +7,7 @@ import styles from './FidelityPanel.module.css'
 
 export default function FidelityPanel() {
   const [tab, setTab] = useState('iscrivi')
+  const [mostraTutti, setMostraTutti] = useState(false)
   const { clienti, loading, caricaClienti, cercaClienti, iscrivi, ricarica } = useFidelity()
 
   useEffect(() => { caricaClienti() }, [caricaClienti])
@@ -44,6 +45,9 @@ export default function FidelityPanel() {
             <div className={styles.listaTitle}>
               <IconClienti size={15} />
               Iscritti al programma
+              {!loading && clienti.length > 0 && (
+                <span className={styles.listaCount}>{clienti.length}</span>
+              )}
             </div>
             <button className="btn-icon" onClick={caricaClienti} title="Aggiorna">
               <IconRefresh size={14} />
@@ -52,7 +56,7 @@ export default function FidelityPanel() {
           {loading && <div className={styles.empty}>Caricamento...</div>}
           {!loading && clienti.length === 0 && <div className={styles.empty}>Nessun iscritto</div>}
           <div className={styles.lista}>
-            {clienti.map(c => (
+            {(mostraTutti ? clienti : clienti.slice(0, 5)).map(c => (
               <div key={c.email} className={styles.clienteItem}>
                 <div>
                   <div className={styles.clienteNome}>{c.nome} {c.cognome}</div>
@@ -65,6 +69,11 @@ export default function FidelityPanel() {
               </div>
             ))}
           </div>
+          {!loading && clienti.length > 5 && (
+            <button className={styles.mostraTuttiBtn} onClick={() => setMostraTutti(v => !v)}>
+              {mostraTutti ? 'Mostra meno' : `Mostra tutti (${clienti.length})`}
+            </button>
+          )}
         </div>
       </div>
     </div>

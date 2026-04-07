@@ -23,6 +23,9 @@
 .listaBox { padding: 24px 28px; border-radius: 0 0 var(--radius) var(--radius); }
 .listaHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .listaTitle { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text2); font-weight: 600; }
+.listaCount { background: var(--accent); color: #fff; font-size: 0.7rem; font-weight: 700; border-radius: 999px; padding: 1px 7px; letter-spacing: 0; text-transform: none; }
+.mostraTuttiBtn { margin-top: 10px; width: 100%; background: none; border: var(--border-style); border-radius: var(--radius-sm); color: var(--text2); font-size: 0.82rem; font-weight: 500; padding: 8px; cursor: pointer; font-family: var(--font-body); transition: all 0.15s; }
+.mostraTuttiBtn:hover { color: var(--accent); border-color: var(--accent); }
 .refresh { display: flex; align-items: center; gap: 5px; background: none; border: var(--border-style); border-radius: var(--radius-sm); color: var(--text2); padding: 4px 12px; font-size: 0.82rem; font-weight: 500; cursor: pointer; font-family: var(--font-body); transition: all 0.15s; }
 .refresh:hover { color: var(--text); border-color: var(--accent); }
 .lista { display: flex; flex-direction: column; gap: 6px; }
