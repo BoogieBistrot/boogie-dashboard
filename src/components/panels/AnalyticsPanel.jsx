@@ -169,7 +169,6 @@ function VistaSettimana({ s }) {
   const canaliPie = [
     { label: 'Sito web',  value: s.prenotazioniSito },
     { label: 'Telefono',  value: s.prenotazioniTel },
-    { label: 'Eventi',    value: s.prenotazioniEventi },
   ]
   return (
     <>
@@ -252,7 +251,6 @@ function VistaGlobale({ settimane }) {
   const canaliPie = [
     { label: 'Sito web',  value: totPrenSito },
     { label: 'Telefono',  value: totPrenTel },
-    { label: 'Eventi',    value: totEventi },
   ]
   const fasceBarre = [
     { label: 'Pranzo',    value: totPranzo },

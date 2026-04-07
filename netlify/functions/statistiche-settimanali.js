@@ -143,7 +143,7 @@ async function calcAndSaveWeek(dataInizio, dataFine, settimana, prevStats) {
   const totPrenotazioni = totali.length
   const totPersone      = totali.reduce((s, p) => s + p.persone, 0)
   const totEventi       = totali.filter(p => p.evento).length
-  const totSito         = totali.filter(p => p.canale === 'Sito web' && !p.evento).length
+  const totSito         = totali.filter(p => p.canale === 'Sito web').length
   const totTelefono     = totali.filter(p => p.canale === 'Telefono').length
   const totCancellate   = cancellate.length
   const tassoCancellazione = prenotazioni.length > 0
