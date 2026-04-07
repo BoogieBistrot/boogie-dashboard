@@ -52,7 +52,7 @@ export default function App() {
     <div className={styles.layout}>
       <Sidebar view={view} onNav={setView} onLogout={handleLogout} />
       <div className={styles.main}>
-        <main className={styles.content}>
+        <main className={`${styles.content} ${view === 'analytics' ? styles.contentFullWidth : ''}`}>
           {renderContent()}
         </main>
       </div>

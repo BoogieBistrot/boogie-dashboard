@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAnalytics } from '../../hooks/useAnalytics'
-import { IconAnalytics, IconRefresh } from '../../icons/index.jsx'
+import { IconAnalytics } from '../../icons/index.jsx'
 import styles from './AnalyticsPanel.module.css'
 
 const GIORNI = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom']
@@ -22,10 +22,23 @@ function formatWeekLabel(s) {
   return `${fmt(s.dataInizio)} – ${fmt(s.dataFine)}`
 }
 
-function KpiCard({ label, value, sub }) {
+function TrendBadge({ value }) {
+  if (value == null || isNaN(value)) return null
+  const up = value >= 0
+  return (
+    <span className={`${styles.trendBadge} ${up ? styles.trendUp : styles.trendDown}`}>
+      {up ? '↑' : '↓'} {Math.abs(value)}%
+    </span>
+  )
+}
+
+function KpiCard({ label, value, sub, trend }) {
   return (
     <div className={styles.kpiCard}>
-      <div className={styles.kpiValue}>{value ?? '—'}</div>
+      <div className={styles.kpiValueRow}>
+        <div className={styles.kpiValue}>{value ?? '—'}</div>
+        {trend != null && <TrendBadge value={trend} />}
+      </div>
       <div className={styles.kpiLabel}>{label}</div>
       {sub && <div className={styles.kpiSub}>{sub}</div>}
     </div>
@@ -161,12 +174,12 @@ function VistaSettimana({ s }) {
   return (
     <>
       <div className={styles.kpiGrid}>
-        <KpiCard label="Prenotazioni"      value={s.prenotazioni} />
-        <KpiCard label="Coperti totali"    value={s.persone} />
+        <KpiCard label="Prenotazioni"      value={s.prenotazioni} trend={s.trendPrenotazioni} />
+        <KpiCard label="Coperti totali"    value={s.persone} trend={s.trendPersone} />
         <KpiCard label="Cancellazioni"     value={`${s.tassoCancellazione}%`} sub={`${s.cancellazioni} tot.`} />
-        <KpiCard label="Lead time medio"   value={`${s.leadTime}g`} sub="giorni anticipo" />
+        <KpiCard label="Anticipo medio prenotazione" value={`${s.leadTime}g`} sub="giorni prima dell'arrivo" />
         <KpiCard label="Dim. media gruppo" value={s.dimGruppo} sub="persone" />
-        <KpiCard label="Clienti unici"     value={s.clientiUnici} />
+        <KpiCard label="Clienti unici"     value={s.clientiUnici} sub={s.clientiDiRitorno > 0 ? `${s.clientiDiRitorno} di ritorno` : undefined} />
       </div>
       <div className={`${styles.card} ${styles.cardFullWidth}`}>
         <div className={styles.cardTitle}>Insights settimana</div>
@@ -213,7 +226,8 @@ function VistaGlobale({ settimane }) {
   const mediaCancellaz    = avg(settimane.map(s => s.tassoCancellazione))
   const mediaLeadTime     = avg(settimane.map(s => s.leadTime))
   const mediaDimGruppo    = avg(settimane.map(s => s.dimGruppo))
-  const mediaClienti      = avg(settimane.map(s => s.clientiUnici))
+  const mediaClienti        = avg(settimane.map(s => s.clientiUnici))
+  const mediaClientiRitorno = avg(settimane.map(s => s.clientiDiRitorno))
 
   const totPrenSito = sum(settimane.map(s => s.prenotazioniSito))
   const totPrenTel  = sum(settimane.map(s => s.prenotazioniTel))
@@ -255,9 +269,9 @@ function VistaGlobale({ settimane }) {
         <KpiCard label="Media pren./settimana"   value={mediaPrenotazioni} />
         <KpiCard label="Media coperti/settimana" value={mediaCoperti} />
         <KpiCard label="Tasso cancellazione"     value={`${mediaCancellaz}%`} sub="media" />
-        <KpiCard label="Lead time medio"         value={`${mediaLeadTime}g`} sub="giorni anticipo" />
+        <KpiCard label="Anticipo medio prenotazione" value={`${mediaLeadTime}g`} sub="giorni prima dell'arrivo" />
         <KpiCard label="Dim. media gruppo"       value={mediaDimGruppo} sub="persone" />
-        <KpiCard label="Clienti unici/sett."     value={mediaClienti} />
+        <KpiCard label="Clienti unici/sett."     value={mediaClienti} sub={mediaClientiRitorno > 0 ? `media ${mediaClientiRitorno} di ritorno` : undefined} />
       </div>
       <div className={styles.chartsGrid}>
         <div className={styles.card}>
@@ -301,7 +315,7 @@ function VistaGlobale({ settimane }) {
 }
 
 export default function AnalyticsPanel() {
-  const { settimane, loading, ricarica } = useAnalytics()
+  const { settimane, loading } = useAnalytics()
   const [vista, setVista] = useState('settimana')
   const [idx, setIdx] = useState(0)
 
@@ -344,9 +358,6 @@ export default function AnalyticsPanel() {
               ))}
             </select>
           )}
-          <button className={styles.refreshBtn} onClick={ricarica} title="Ricarica dati">
-            <IconRefresh size={14} />
-          </button>
         </div>
       </div>
 

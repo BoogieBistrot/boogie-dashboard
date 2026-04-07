@@ -32,17 +32,19 @@
   border: var(--border-style);
   border-radius: var(--radius-sm);
   overflow: hidden;
+  height: 32px;
 }
 
 .vistaBtn {
   background: none;
   border: none;
   color: var(--text2);
-  padding: 6px 14px;
+  padding: 0 14px;
   font-size: 0.82rem;
   font-family: var(--font-body);
   cursor: pointer;
   transition: all 0.15s;
+  height: 100%;
 }
 
 .vistaBtnActive {
@@ -72,7 +74,8 @@
   border-radius: var(--radius-sm);
   background: var(--bg2);
   color: var(--text);
-  padding: 6px 10px;
+  padding: 0 10px;
+  height: 32px;
   font-size: 0.82rem;
   font-family: var(--font-body);
   outline: none;
@@ -80,22 +83,6 @@
   transition: border-color 0.15s;
 }
 .weekSelect:focus { border-color: var(--accent); }
-
-.refreshBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: var(--border-style);
-  border-radius: var(--radius-sm);
-  color: var(--text2);
-  width: 30px;
-  height: 30px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.refreshBtn:hover { color: var(--accent); border-color: var(--accent); }
-
 
 
 .loading {
@@ -116,14 +103,17 @@
   line-height: 1.5;
 }
 
-.body { max-width: 960px; }
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
 /* KPI */
 .kpiGrid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 12px;
-  margin-bottom: 20px;
 }
 
 .kpiCard {
@@ -136,12 +126,36 @@
   gap: 2px;
 }
 
+.kpiValueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
 .kpiValue {
   font-family: var(--font-serif);
   font-size: 1.6rem;
   font-weight: 700;
   color: var(--accent);
   line-height: 1.1;
+}
+
+.trendBadge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.trendUp {
+  background: color-mix(in srgb, #22c55e 15%, transparent);
+  color: #16a34a;
+}
+
+.trendDown {
+  background: color-mix(in srgb, #ef4444 15%, transparent);
+  color: #dc2626;
 }
 
 .kpiLabel {

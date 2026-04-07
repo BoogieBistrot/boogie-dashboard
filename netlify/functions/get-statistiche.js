@@ -27,38 +27,60 @@ exports.handler = async (event) => {
     if (!res.ok) throw new Error(await res.text())
     const json = await res.json()
 
-    const settimane = (json.records || []).map(r => ({
-      settimana:          r.fields['Settimana'] || '',
-      dataInizio:         r.fields['Data inizio'] || '',
-      dataFine:           r.fields['Data fine'] || '',
-      prenotazioni:       r.fields['Prenotazioni totali'] || 0,
-      persone:            r.fields['Persone totali'] || 0,
-      prenotazioniSito:   r.fields['Prenotazioni sito'] || 0,
-      prenotazioniTel:    r.fields['Prenotazioni telefono'] || 0,
-      prenotazioniEventi: r.fields['Prenotazioni eventi'] || 0,
-      cancellazioni:      r.fields['Cancellazioni'] || 0,
-      tassoCancellazione: r.fields['Tasso cancellazione'] || 0,
-      leadTime:           r.fields['Lead time medio (giorni)'] || 0,
-      dimGruppo:          r.fields['Dimensione media gruppo'] || 0,
-      slotPiu:            r.fields['Slot più richiesto'] || '',
-      slotMeno:           r.fields['Slot meno richiesto'] || '',
-      giornopiuPieno:     r.fields['Giorno più pieno'] || '',
-      giornopiuVuoto:     r.fields['Giorno più vuoto'] || '',
-      fasciaMenoRichiesta: r.fields['Fascia meno richiesta'] || '',
-      copertipranzo:      r.fields['Coperti pranzo'] || 0,
-      copertiAperitivo:   r.fields['Coperti aperitivo'] || 0,
-      copertiCena:        r.fields['Coperti cena'] || 0,
-      lunedi:             r.fields['Pren. Lunedì'] || 0,
-      martedi:            r.fields['Pren. Martedì'] || 0,
-      mercoledi:          r.fields['Pren. Mercoledì'] || 0,
-      giovedi:            r.fields['Pren. Giovedì'] || 0,
-      venerdi:            r.fields['Pren. Venerdì'] || 0,
-      sabato:             r.fields['Pren. Sabato'] || 0,
-      domenica:           r.fields['Pren. Domenica'] || 0,
-      clientiUnici:       r.fields['Clienti unici'] || 0,
-      lastMinute:         r.fields['Prenotazioni last minute'] || 0,
-      mediaCopertiGiorno: r.fields['Media coperti per giorno'] || 0,
-    }))
+    const mapped = (json.records || []).map(r => {
+      const tasso = r.fields['Tasso cancellazione']
+      const tassoParsed = tasso != null
+        ? parseFloat(String(tasso).replace('%', ''))
+        : 0
+
+      const trendPren = r.fields['Prenotazioni ultima settimana vs precedente (%)']
+      const trendPers = r.fields['Persone ultima settimana vs precedente (%)']
+
+      return {
+        settimana:           r.fields['Settimana'] || '',
+        dataInizio:          r.fields['Data inizio'] || '',
+        dataFine:            r.fields['Data fine'] || '',
+        prenotazioni:        r.fields['Prenotazioni totali'] || 0,
+        persone:             r.fields['Persone totali'] || 0,
+        prenotazioniSito:    r.fields['Prenotazioni sito'] || 0,
+        prenotazioniTel:     r.fields['Prenotazioni telefono'] || 0,
+        prenotazioniEventi:  r.fields['Prenotazioni eventi'] || 0,
+        cancellazioni:       r.fields['Cancellazioni'] || 0,
+        tassoCancellazione:  isNaN(tassoParsed) ? 0 : tassoParsed,
+        leadTime:            r.fields['Lead time medio (giorni)'] || 0,
+        dimGruppo:           r.fields['Dimensione media gruppo'] || 0,
+        slotPiu:             r.fields['Slot più richiesto'] || '',
+        slotMeno:            r.fields['Slot meno richiesto'] || '',
+        giornopiuPieno:      r.fields['Giorno più pieno'] || '',
+        giornopiuVuoto:      r.fields['Giorno più vuoto'] || '',
+        fasciaMenoRichiesta: r.fields['Fascia meno richiesta'] || '',
+        copertipranzo:       r.fields['Coperti pranzo'] || 0,
+        copertiAperitivo:    r.fields['Coperti aperitivo'] || 0,
+        copertiCena:         r.fields['Coperti cena'] || 0,
+        lunedi:              r.fields['Pren. Lunedì'] || 0,
+        martedi:             r.fields['Pren. Martedì'] || 0,
+        mercoledi:           r.fields['Pren. Mercoledì'] || 0,
+        giovedi:             r.fields['Pren. Giovedì'] || 0,
+        venerdi:             r.fields['Pren. Venerdì'] || 0,
+        sabato:              r.fields['Pren. Sabato'] || 0,
+        domenica:            r.fields['Pren. Domenica'] || 0,
+        clientiUnici:        r.fields['Clienti unici'] || 0,
+        clientiDiRitorno:    r.fields['Clienti di ritorno'] || 0,
+        lastMinute:          r.fields['Prenotazioni last minute'] || 0,
+        mediaCopertiGiorno:  r.fields['Media coperti per giorno'] || 0,
+        trendPrenotazioni:   trendPren != null ? parseFloat(String(trendPren).replace('%', '')) : null,
+        trendPersone:        trendPers != null ? parseFloat(String(trendPers).replace('%', '')) : null,
+      }
+    })
+
+    // Deduplica per settimana: tieni il record con più prenotazioni
+    const deduped = {}
+    for (const s of mapped) {
+      if (!deduped[s.settimana] || s.prenotazioni > deduped[s.settimana].prenotazioni) {
+        deduped[s.settimana] = s
+      }
+    }
+    const settimane = Object.values(deduped)
 
     return {
       statusCode: 200,
