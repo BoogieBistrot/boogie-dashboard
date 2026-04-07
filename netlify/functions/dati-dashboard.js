@@ -63,12 +63,12 @@ exports.handler = async (event) => {
       ? ultimo['Google Recensioni'] - meseFa.fields['Google Recensioni']
       : null;
 
-    const diffSettimanaTA = settimanaFa
-      ? (ultimo['TripAdvisor Recensioni'] || 0) - (settimanaFa.fields['TripAdvisor Recensioni'] || 0)
+    const diffSettimanaTA = settimanaFa && ultimo['TripAdvisor Recensioni'] && settimanaFa.fields['TripAdvisor Recensioni']
+      ? ultimo['TripAdvisor Recensioni'] - settimanaFa.fields['TripAdvisor Recensioni']
       : null;
 
-    const diffMeseTA = meseFa
-      ? (ultimo['TripAdvisor Recensioni'] || 0) - (meseFa.fields['TripAdvisor Recensioni'] || 0)
+    const diffMeseTA = meseFa && ultimo['TripAdvisor Recensioni'] && meseFa.fields['TripAdvisor Recensioni']
+      ? ultimo['TripAdvisor Recensioni'] - meseFa.fields['TripAdvisor Recensioni']
       : null;
 
     return {

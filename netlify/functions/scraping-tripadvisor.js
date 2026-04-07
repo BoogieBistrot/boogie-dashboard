@@ -24,35 +24,52 @@ exports.handler = async (event) => {
 
   try {
     // ── 1. Chiama ScraperAPI ─────────────────────────────────────────
-    const scraperUrl = `http://api.scraperapi.com?api_key=${SCRAPER_API_KEY}&url=${encodeURIComponent(TA_URL)}&render=false`;
-    const res = await fetch(scraperUrl);
+    const scraperUrl = `http://api.scraperapi.com?api_key=${SCRAPER_API_KEY}&url=${encodeURIComponent(TA_URL)}&render=true&country_code=it`;
+    const res = await fetch(scraperUrl, { timeout: 25000 });
     const html = await res.text();
+
+    console.log('HTML length:', html.length);
+    console.log('HTML snippet:', html.substring(0, 500));
 
     let recensioni = null;
     let rating = null;
 
     const recensioniPatterns = [
       /"reviewCount"\s*:\s*(\d+)/,
-      /(\d+(?:\.\d+)?)\s*recensioni/i,
-      /(\d+(?:\.\d+)?)\s*reviews/i,
+      /"reviewCount"\s*:\s*"(\d+)"/,
+      /reviewCount["']\s*:\s*["']?(\d+)/i,
       /"aggregateRating"[^}]*"reviewCount"\s*:\s*"?(\d+)"?/,
-      /reviewCount['":\s]+(\d+)/i,
+      /(\d[\d.]*)\s*recensioni/i,
+      /(\d[\d.]*)\s*reviews/i,
+      /totalCount['":\s]+(\d+)/i,
+      /data-reviewcount="(\d+)"/i,
+      /"count"\s*:\s*(\d+)/,
     ];
 
     for (const pattern of recensioniPatterns) {
       const match = html.match(pattern);
-      if (match) { recensioni = parseInt(match[1].replace(/\./g, '')); break; }
+      if (match) {
+        const val = parseInt(match[1].replace(/\./g, ''));
+        if (val > 0) { recensioni = val; break; }
+      }
     }
 
     const ratingPatterns = [
       /"ratingValue"\s*:\s*"?([\d.]+)"?/,
-      /ratingValue['":\s]+([\d.]+)/i,
+      /ratingValue["']\s*:\s*["']?([\d.]+)/i,
+      /"rating"\s*:\s*([\d.]+)/,
+      /data-rating="([\d.]+)"/i,
     ];
 
     for (const pattern of ratingPatterns) {
       const match = html.match(pattern);
-      if (match) { rating = parseFloat(match[1]); break; }
+      if (match) {
+        const val = parseFloat(match[1]);
+        if (val > 0 && val <= 5) { rating = val; break; }
+      }
     }
+
+    console.log('Parsed recensioni:', recensioni, 'rating:', rating);
 
     if (!recensioni) {
       return { statusCode: 200, headers, body: JSON.stringify({ success: false, error: 'Dati non trovati' }) };
