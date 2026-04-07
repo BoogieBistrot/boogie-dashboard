@@ -124,3 +124,33 @@
 
 .btnScala { background: var(--danger) !important; }
 .btnScala:hover { background: #b71c1c !important; }
+
+.modoToggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.modoBtn {
+  flex: 1;
+  padding: 7px 12px;
+  background: none;
+  border: none;
+  color: var(--text2);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all 0.15s;
+}
+
+.modoBtn:first-child { border-right: 1px solid var(--border); }
+.modoBtn:hover:not(.modoBtnActive) { background: var(--bg3); color: var(--text); }
+
+.modoBtnActive {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}

@@ -8,7 +8,7 @@
 .titolo { font-size: 1rem; font-weight: 700; color: var(--text); }
 
 .body { padding: 24px; }
-.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; align-items: start; }
 .field { display: flex; flex-direction: column; gap: 5px; }
 .full { grid-column: 1 / -1; }
 .field label { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; color: var(--text2); }
@@ -17,7 +17,16 @@
 .field input:focus, .field select:focus { border-color: var(--accent); }
 .field select:disabled { opacity: 0.5; cursor: not-allowed; }
 
+.tagsRow { display: flex; flex-wrap: wrap; gap: 8px; }
+.tagChip { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border: var(--border-style); border-radius: var(--radius-sm); font-size: 0.82rem; color: var(--text2); cursor: pointer; transition: all 0.15s; user-select: none; height: auto; min-height: unset; }
+.tagChip:hover { border-color: var(--accent); color: var(--text); }
+.tagChip input { accent-color: var(--accent); width: 14px; height: 14px; min-height: unset; cursor: pointer; }
+.tagChip:has(input:checked) { background: rgba(184,130,10,0.08); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+
 .msg { padding: 9px 14px; border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: 16px; }
+.warnBox { background: rgba(180,83,9,0.08); border: 1px solid rgba(180,83,9,0.35); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 10px; }
+.warnText { font-size: 0.88rem; color: var(--text); line-height: 1.5; }
+.warnActions { display: flex; gap: 8px; justify-content: flex-end; }
 .ok { background: rgba(46,125,50,0.1); color: var(--success); border: 1px solid rgba(46,125,50,0.3); }
 .err { background: rgba(192,57,43,0.1); color: var(--danger); border: 1px solid rgba(192,57,43,0.3); }
 

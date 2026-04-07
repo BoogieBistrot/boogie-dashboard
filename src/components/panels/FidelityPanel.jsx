@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { useFidelity } from '../../hooks/useFidelity'
 import IscriviTab from './fidelity/IscriviTab'
 import RicaricaTab from './fidelity/RicaricaTab'
-import { IconFidelity, IconClienti, IconPuntiAdd, IconPuntiRemove, IconRefresh } from '../../icons/index.jsx'
+import GestisciTagTab from './fidelity/GestisciTagTab'
+import { IconFidelity, IconClienti, IconPuntiAdd, IconPuntiRemove, IconRefresh, IconTag } from '../../icons/index.jsx'
 import styles from './FidelityPanel.module.css'
 
 export default function FidelityPanel() {
@@ -16,6 +17,7 @@ export default function FidelityPanel() {
     { id: 'iscrivi',  Icon: IconClienti,     label: 'Iscrivi cliente' },
     { id: 'ricarica', Icon: IconPuntiAdd,    label: 'Ricarica punti' },
     { id: 'scala',    Icon: IconPuntiRemove, label: 'Scala punti' },
+    // { id: 'tag',      Icon: IconTag,         label: 'Gestisci tag' },
   ]
 
   return (
@@ -39,6 +41,7 @@ export default function FidelityPanel() {
           {tab === 'iscrivi'  && <IscriviTab iscrivi={iscrivi} onSuccess={caricaClienti} />}
           {tab === 'ricarica' && <RicaricaTab cercaClienti={cercaClienti} ricarica={ricarica} onSuccess={caricaClienti} modo="ricarica" />}
           {tab === 'scala'    && <RicaricaTab cercaClienti={cercaClienti} ricarica={ricarica} onSuccess={caricaClienti} modo="scala" />}
+          {/* {tab === 'tag'      && <GestisciTagTab />} */}
         </div>
         <div className={styles.listaBox}>
           <div className={styles.listaHeader}>

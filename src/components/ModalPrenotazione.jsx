@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { authFetch } from '../lib/authFetch'
+import { useTag } from '../hooks/useTag'
 import { IconClose, IconCheck } from '../icons/index.jsx'
 import styles from './ModalPrenotazione.module.css'
 
@@ -10,17 +11,18 @@ const GESTISCI_URL = `${NETLIFY_BASE}/gestisci-prenotazione`
 const STATI = ['In attesa', 'Confermata', 'Cancellata']
 
 const EMPTY_FORM = {
-  nome: '', data: '', ora: '', persone: '', telefono: '', email: '', note: '', stato: 'In attesa'
+  nome: '', data: '', ora: '', persone: '', telefono: '', email: '', note: '', stato: 'In attesa', tags: []
 }
 
 export default function ModalPrenotazione({ prenotazione = null, onClose, onSuccess }) {
   const isEdit = !!prenotazione
+  const { tag: tagDisponibili } = useTag()
   const [form, setForm] = useState(EMPTY_FORM)
   const [slots, setSlots] = useState([])
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [msg, setMsg] = useState(null)
-  const [forza, setForza] = useState(false)
+  const [confermaSlotPieno, setConfermaSlotPieno] = useState(false)
 
   // Popola il form in modalità edit
   useEffect(() => {
@@ -34,6 +36,7 @@ export default function ModalPrenotazione({ prenotazione = null, onClose, onSucc
         email:    prenotazione.email || '',
         note:     prenotazione.note || '',
         stato:    prenotazione.stato || 'In attesa',
+        tags:     prenotazione.tags || [],
       })
       if (prenotazione.data) caricaSlots(prenotazione.data)
     }
@@ -57,12 +60,22 @@ export default function ModalPrenotazione({ prenotazione = null, onClose, onSucc
     caricaSlots(data)
   }
 
+  function slotSelezionatoPieno() {
+    if (!form.ora) return false
+    return slots.some(f => f.slots.some(s => s.ora === form.ora && s.pieno && s.ora !== prenotazione?.ora))
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     if (!form.nome || !form.data || !form.ora || !form.persone) {
       setMsg({ type: 'err', text: 'Compila tutti i campi obbligatori' })
       return
     }
+    if (slotSelezionatoPieno() && !confermaSlotPieno) {
+      setConfermaSlotPieno(true)
+      return
+    }
+    setConfermaSlotPieno(false)
     setSubmitting(true)
     setMsg(null)
 
@@ -127,7 +140,7 @@ export default function ModalPrenotazione({ prenotazione = null, onClose, onSucc
               <label>N° Persone <span className={styles.req}>*</span></label>
               <select value={form.persone} onChange={e => setForm(f => ({ ...f, persone: e.target.value }))}>
                 <option value="">—</option>
-                {[...Array(30)].map((_, i) => (
+                {[...Array(100)].map((_, i) => (
                   <option key={i+1} value={i+1}>{i+1} {i === 0 ? 'persona' : 'persone'}</option>
                 ))}
               </select>
@@ -139,25 +152,18 @@ export default function ModalPrenotazione({ prenotazione = null, onClose, onSucc
             </div>
 
             <div className={styles.field}>
-              <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span>Orario <span className={styles.req}>*</span></span>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 400, fontSize: '0.8rem', color: forza ? '#C0392B' : 'var(--text2)', cursor: 'pointer' }}>
-                  <input type="checkbox" checked={forza} onChange={e => setForza(e.target.checked)} style={{ accentColor: '#C0392B' }} />
-                  Forza (ignora al completo)
-                </label>
-              </label>
-              <select value={form.ora} onChange={e => setForm(f => ({ ...f, ora: e.target.value }))} disabled={!form.data || loadingSlots}>
+              <label>Orario <span className={styles.req}>*</span></label>
+              <select value={form.ora} onChange={e => { setForm(f => ({ ...f, ora: e.target.value })); setConfermaSlotPieno(false) }} disabled={!form.data || loadingSlots}>
                 <option value="">{loadingSlots ? 'Caricamento...' : form.data ? 'Scegli orario' : 'Seleziona prima la data'}</option>
                 {slots.map(({ fascia, slots: s }) => (
                   <optgroup key={fascia} label={fascia}>
                     {s.map(slot => (
-                      <option key={slot.ora} value={slot.ora} disabled={slot.pieno && slot.ora !== form.ora && !forza}>
+                      <option key={slot.ora} value={slot.ora}>
                         {slot.ora}{slot.pieno && slot.ora !== form.ora ? ' — al completo' : ''}
                       </option>
                     ))}
                   </optgroup>
                 ))}
-                {/* In edit mode, mostra l'ora attuale anche se non negli slot */}
                 {isEdit && form.ora && !slots.some(f => f.slots.some(s => s.ora === form.ora)) && (
                   <option value={form.ora}>{form.ora}</option>
                 )}
@@ -174,6 +180,25 @@ export default function ModalPrenotazione({ prenotazione = null, onClose, onSucc
             )}
 
             <div className={`${styles.field} ${styles.full}`}>
+              <label>Tag <span style={{ fontWeight: 400, color: 'var(--text3)', fontSize: '0.72rem' }}>— non visibile al cliente</span></label>
+              <div className={styles.tagsRow}>
+                {tagDisponibili.map(t => (
+                  <label key={t.id} className={styles.tagChip}>
+                    <input
+                      type="checkbox"
+                      checked={form.tags.includes(t.nome)}
+                      onChange={e => setForm(f => ({
+                        ...f,
+                        tags: e.target.checked ? [...f.tags, t.nome] : f.tags.filter(x => x !== t.nome)
+                      }))}
+                    />
+                    {t.nome}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className={`${styles.field} ${styles.full}`}>
               <label>Note</label>
               <input value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} placeholder="Allergie, occasioni speciali..." />
             </div>
@@ -182,7 +207,19 @@ export default function ModalPrenotazione({ prenotazione = null, onClose, onSucc
 
           {msg && <div className={`${styles.msg} ${styles[msg.type]}`}>{msg.text}</div>}
 
-          <div className={styles.actions}>
+          {confermaSlotPieno && (
+            <div className={styles.warnBox}>
+              <div className={styles.warnText}>
+                ⚠️ Lo slot delle <strong>{form.ora}</strong> è già al completo. Vuoi aggiungere la prenotazione comunque?
+              </div>
+              <div className={styles.warnActions}>
+                <button type="button" className="btn-secondary" onClick={() => setConfermaSlotPieno(false)}>No, cambia orario</button>
+                <button type="submit" className="btn-primary">Sì, aggiungi comunque</button>
+              </div>
+            </div>
+          )}
+
+          {!confermaSlotPieno && <div className={styles.actions}>
             <button type="button" className="btn-secondary" onClick={onClose}>Annulla</button>
             {isEdit && (
               <button type="button" style={{ background: '#C0392B', color: '#fff', border: 'none', borderRadius: 'var(--radius-sm)', padding: '8px 16px', cursor: 'pointer', fontWeight: 600 }}
@@ -215,7 +252,7 @@ export default function ModalPrenotazione({ prenotazione = null, onClose, onSucc
             <button type="submit" className="btn-primary" disabled={submitting}>
               {submitting ? 'Salvataggio...' : isEdit ? 'Salva modifiche' : 'Inserisci prenotazione'}
             </button>
-          </div>
+          </div>}
         </form>
       </div>
     </div>

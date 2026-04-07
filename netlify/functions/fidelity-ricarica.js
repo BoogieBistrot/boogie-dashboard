@@ -20,11 +20,12 @@ exports.handler = async (event) => {
   let data;
   try { data = JSON.parse(event.body); } catch { return { statusCode: 400, headers, body: 'Invalid JSON' }; }
 
-  const { email, importo, nota, moltiplicatore, scalaP } = data;
+  const { email, importo, nota, moltiplicatore, scalaP, puntiDiretti } = data;
   if (!email) return { statusCode: 400, headers, body: 'Email obbligatoria' };
 
   const isScala = scalaP && parseInt(scalaP) > 0;
-  if (!isScala && (!importo || parseFloat(importo) <= 0)) {
+  const isDiretti = !isScala && puntiDiretti && parseInt(puntiDiretti) > 0;
+  if (!isScala && !isDiretti && (!importo || parseFloat(importo) <= 0)) {
     return { statusCode: 400, headers, body: 'Importo obbligatorio' };
   }
 
@@ -36,7 +37,9 @@ exports.handler = async (event) => {
 
   const puntiAggiunti = isScala
     ? -Math.abs(parseInt(scalaP))
-    : Math.ceil(parseFloat(importo) * 5) * (moltiplicatore || 1);
+    : isDiretti
+      ? parseInt(puntiDiretti)
+      : Math.ceil(parseFloat(importo) * 5) * (moltiplicatore || 1);
 
   // Leggi contatto attuale
   const contactRes = await fetch(`https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}`, {
@@ -100,7 +103,7 @@ exports.handler = async (event) => {
           <p style="font-size:15px;color:#4A4030;line-height:1.7;margin:0 0 24px;">Ciao <strong>${nome}</strong>, grazie per la tua visita!</p>
           <table cellpadding="0" cellspacing="0" width="100%" style="background:#F5F0E8;border-left:3px solid #C4913A;margin-bottom:24px;">
             <tr><td style="padding:20px 24px;">
-              <p style="margin:0 0 12px;font-size:13px;"><span style="color:#8B6F47;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:3px;">Spesa</span><strong style="color:#1A1610;">€${parseFloat(importo || 0).toFixed(2)}${moltiplicatore > 1 ? ' · Punti doppi 2×' : ''}</strong></p>
+              ${isDiretti ? '' : `<p style="margin:0 0 12px;font-size:13px;"><span style="color:#8B6F47;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:3px;">Spesa</span><strong style="color:#1A1610;">€${parseFloat(importo || 0).toFixed(2)}${moltiplicatore > 1 ? ' · Punti doppi 2×' : ''}</strong></p>`}
               <p style="margin:0 0 12px;font-size:13px;"><span style="color:#8B6F47;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:3px;">Punti aggiunti</span><strong style="color:#C4913A;font-size:1.4rem;">+${puntiAggiunti}</strong></p>
               <p style="margin:0;font-size:13px;"><span style="color:#8B6F47;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:3px;">Totale punti</span><strong style="color:#C4913A;font-size:1.8rem;">${nuoviPunti}</strong></p>
               ${nota ? `<p style="margin:12px 0 0;font-size:12px;color:#8B6F47;font-style:italic;">${nota}</p>` : ''}

@@ -1,5 +1,19 @@
 // netlify/functions/conferma.js
 
+async function aggiungiTagBrevo(email, nuoviTag, apiKey) {
+  const brevoHeaders = { 'Accept': 'application/json', 'Content-Type': 'application/json', 'api-key': apiKey }
+  const contactRes = await fetch(`https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}`, { headers: brevoHeaders })
+  if (!contactRes.ok) return
+  const contact = await contactRes.json()
+  const tagsEsistenti = contact.tags || []
+  const tagsMerged = [...new Set([...tagsEsistenti, ...nuoviTag])]
+  await fetch(`https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}`, {
+    method: 'PUT',
+    headers: brevoHeaders,
+    body: JSON.stringify({ tags: tagsMerged })
+  })
+}
+
 exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -70,19 +84,24 @@ exports.handler = async (event) => {
 
   // Leggi messaggio dal body
   let messaggio = '';
+  let tags = [];
   if (event.httpMethod === 'POST' && event.body) {
     try {
       const body = JSON.parse(event.body);
       messaggio = body.messaggio || '';
+      tags = Array.isArray(body.tags) ? body.tags : [];
     } catch {}
   }
 
   // ── 2. Aggiorna stato → Confermata ──────────────────────────────
   try {
+    const patchFields = { 'Stato': 'Confermata' }
+    if (tags.length > 0) patchFields['Tag'] = tags
+
     const patchRes = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(AIRTABLE_TABLE)}/${id}`, {
       method: 'PATCH',
       headers: { 'Authorization': `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fields: { 'Stato': 'Confermata' } })
+      body: JSON.stringify({ fields: patchFields })
     });
     if (!patchRes.ok) {
       console.error('Airtable patch error:', await patchRes.text());
@@ -93,7 +112,12 @@ exports.handler = async (event) => {
     return { statusCode: 500, headers, body: JSON.stringify({ success: false }) };
   }
 
-  // ── 3. Link calendario ───────────────────────────────────────────
+  // ── 3. Tag Brevo ────────────────────────────────────────────────
+  if (email && BREVO_API_KEY && tags.length > 0) {
+    try { await aggiungiTagBrevo(email, tags, BREVO_API_KEY) } catch (e) { console.error('Brevo tag error:', e) }
+  }
+
+  // ── 4. Link calendario ───────────────────────────────────────────
   let googleCalLink = '';
   if (data && ora) {
     const [anno, mese, giorno] = data.split('-');

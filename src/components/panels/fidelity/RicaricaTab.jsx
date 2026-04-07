@@ -4,10 +4,12 @@ import sharedStyles from '../FidelityPanel.module.css'
 
 export default function RicaricaTab({ cercaClienti, ricarica, onSuccess, modo = 'ricarica' }) {
   const isScala = modo === 'scala'
+  const [modoInserimento, setModoInserimento] = useState('importo') // 'importo' | 'diretti'
   const [query, setQuery] = useState('')
   const [dropdown, setDropdown] = useState([])
   const [cliente, setCliente] = useState(null)
   const [importo, setImporto] = useState('')
+  const [puntiDiretti, setPuntiDiretti] = useState('')
   const [puntiScala, setPuntiScala] = useState('')
   const [nota, setNota] = useState('')
   const [doppi, setDoppi] = useState(false)
@@ -28,13 +30,17 @@ export default function RicaricaTab({ cercaClienti, ricarica, onSuccess, modo = 
 
   function seleziona(c) {
     setCliente(c); setQuery(c.nome + ' ' + c.cognome)
-    setDropdown([]); setImporto(''); setPuntiScala(''); setMsg(null)
+    setDropdown([]); setImporto(''); setPuntiScala(''); setPuntiDiretti(''); setMsg(null)
   }
 
   function calcolaPunti() {
     if (isScala) {
       const ps = parseInt(puntiScala) || 0
       return ps > 0 ? { valore: ps, label: `-${ps.toLocaleString('it-IT')}`, nuovo: Math.max(0, (cliente?.punti || 0) - ps) } : null
+    }
+    if (modoInserimento === 'diretti') {
+      const pts = parseInt(puntiDiretti) || 0
+      return pts > 0 ? { valore: pts, label: `+${pts.toLocaleString('it-IT')}`, nuovo: (cliente?.punti || 0) + pts } : null
     }
     const imp = parseFloat(importo) || 0
     if (imp <= 0) return null
@@ -47,16 +53,19 @@ export default function RicaricaTab({ cercaClienti, ricarica, onSuccess, modo = 
   async function handleSubmit() {
     if (!cliente) { setMsg({ type: 'err', text: 'Seleziona prima un cliente' }); return }
     if (isScala && (!puntiScala || parseInt(puntiScala) <= 0)) { setMsg({ type: 'err', text: 'Inserisci i punti da scalare' }); return }
-    if (!isScala && (!importo || parseFloat(importo) <= 0)) { setMsg({ type: 'err', text: 'Inserisci un importo valido' }); return }
+    if (!isScala && modoInserimento === 'diretti' && (!puntiDiretti || parseInt(puntiDiretti) <= 0)) { setMsg({ type: 'err', text: 'Inserisci i punti da aggiungere' }); return }
+    if (!isScala && modoInserimento === 'importo' && (!importo || parseFloat(importo) <= 0)) { setMsg({ type: 'err', text: 'Inserisci un importo valido' }); return }
     setLoading(true); setMsg(null)
     const payload = isScala
       ? { email: cliente.email, importo: 0, nota, moltiplicatore: 1, scalaP: parseInt(puntiScala) }
-      : { email: cliente.email, importo: parseFloat(importo), nota, moltiplicatore: doppi ? 2 : 1 }
+      : modoInserimento === 'diretti'
+        ? { email: cliente.email, importo: 0, nota, moltiplicatore: 1, puntiDiretti: parseInt(puntiDiretti) }
+        : { email: cliente.email, importo: parseFloat(importo), nota, moltiplicatore: doppi ? 2 : 1 }
     const res = await ricarica(payload)
     setLoading(false)
     if (res.success) {
       setMsg({ type: 'ok', text: isScala ? `-${parseInt(puntiScala)} punti scalati — Totale: ${res.nuoviPunti}` : `+${res.puntiAggiunti} punti aggiunti — Totale: ${res.nuoviPunti}` })
-      setCliente(null); setQuery(''); setImporto(''); setPuntiScala(''); setNota(''); setDoppi(false)
+      setCliente(null); setQuery(''); setImporto(''); setPuntiScala(''); setPuntiDiretti(''); setNota(''); setDoppi(false)
       onSuccess?.()
     } else {
       setMsg({ type: 'err', text: 'Errore — riprova' })
@@ -95,17 +104,38 @@ export default function RicaricaTab({ cercaClienti, ricarica, onSuccess, modo = 
         </div>
       )}
 
+      {!isScala && (
+        <div className={styles.modoToggle}>
+          <button
+            type="button"
+            className={`${styles.modoBtn} ${modoInserimento === 'importo' ? styles.modoBtnActive : ''}`}
+            onClick={() => { setModoInserimento('importo'); setImporto(''); setPuntiDiretti(''); setDoppi(false) }}
+          >
+            Per importo
+          </button>
+          <button
+            type="button"
+            className={`${styles.modoBtn} ${modoInserimento === 'diretti' ? styles.modoBtnActive : ''}`}
+            onClick={() => { setModoInserimento('diretti'); setImporto(''); setPuntiDiretti(''); setDoppi(false) }}
+          >
+            Punti diretti
+          </button>
+        </div>
+      )}
+
       <div className={styles.importoRow}>
         <div className={sharedStyles.field}>
-          <label>{isScala ? 'Punti da scalare' : 'Importo spesa (€)'}</label>
+          <label>{isScala ? 'Punti da scalare' : modoInserimento === 'diretti' ? 'Punti da aggiungere' : 'Importo spesa (€)'}</label>
           {isScala
             ? <input type="number" value={puntiScala} onChange={e => setPuntiScala(e.target.value)} placeholder="Es. 500" min="0" />
-            : <input type="number" value={importo} onChange={e => setImporto(e.target.value)} placeholder="0.00" min="0" step="0.01" />
+            : modoInserimento === 'diretti'
+              ? <input type="number" value={puntiDiretti} onChange={e => setPuntiDiretti(e.target.value)} placeholder="Es. 250" min="0" />
+              : <input type="number" value={importo} onChange={e => setImporto(e.target.value)} placeholder="0.00" min="0" step="0.01" />
           }
         </div>
-        {!isScala && (
+        {!isScala && modoInserimento === 'importo' && (
           <div className={sharedStyles.field}>
-            <label>Punti da aggiungere</label>
+            <label>Punti calcolati</label>
             <div className={styles.preview}>
               <span className={`${styles.previewVal} ${preview ? styles.previewPos : ''}`}>
                 {preview ? preview.label : '—'}
@@ -114,9 +144,19 @@ export default function RicaricaTab({ cercaClienti, ricarica, onSuccess, modo = 
             </div>
           </div>
         )}
+        {!isScala && modoInserimento === 'diretti' && preview && cliente && (
+          <div className={sharedStyles.field}>
+            <label>Totale dopo</label>
+            <div className={styles.preview}>
+              <span className={`${styles.previewVal} ${styles.previewPos}`}>
+                {preview.nuovo.toLocaleString('it-IT')}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
-      {!isScala && (
+      {!isScala && modoInserimento === 'importo' && (
         <div style={{ marginBottom: '14px' }}>
           <button type="button" className={`btn-toggle ${doppi ? 'active' : ''}`} style={{ flex: 'none' }} onClick={() => setDoppi(d => !d)}>
             Punti doppi 2×

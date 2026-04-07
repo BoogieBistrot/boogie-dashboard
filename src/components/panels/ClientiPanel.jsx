@@ -47,7 +47,7 @@ export default function ClientiPanel() {
       <div className={styles.body}>
         <div className={styles.searchRow}>
           <input type="text" placeholder="Cerca per nome o email..." value={cerca} onChange={onCerca} className={styles.searchInput} />
-          <span className={styles.risultati}>{loading ? 'Caricamento...' : clienti.length + ' risultati'}</span>
+          {cerca && !loading && <span className={styles.risultati}>{clienti.length} risultati</span>}
         </div>
         {!loading && clienti.length === 0 && <div className={styles.empty}>Nessun risultato</div>}
         {clienti.length > 0 && (

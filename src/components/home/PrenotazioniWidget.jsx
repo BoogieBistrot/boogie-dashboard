@@ -31,13 +31,21 @@ function getLabelGiorno(dataStr) {
 
 function isGiornoChiuso(dateStr, orari, chiusure) {
   const dayOfWeek = new Date(dateStr + 'T12:00:00').getDay()
+
+  const matchData = (c) =>
+    (c.tipo === 'Data specifica' && c.dataInizio <= dateStr && dateStr <= c.dataFine) ||
+    (c.tipo === 'Ricorrente' && c.giorno === dayOfWeek)
+
+  // Apertura straordinaria: ha priorità su tutto
+  if (chiusure.some(c => c.tipoApertura === 'Apertura' && !c.fascia && matchData(c))) return false
+
+  // Chiusura straordinaria giornata intera
+  if (chiusure.some(c => c.tipoApertura !== 'Apertura' && !c.fascia && matchData(c))) return true
+
   // Chiusura ordinaria: nessun orario attivo per questo giorno
   if (orari.length > 0 && !orari.some(o => o.giorno === dayOfWeek && o.attivo)) return true
-  // Chiusura straordinaria: regola esplicita in Chiusure
-  return chiusure.some(c => !c.fascia && (
-    (c.tipo === 'Specifica' && c.dataInizio <= dateStr && dateStr <= c.dataFine) ||
-    (c.tipo === 'Ricorrente' && c.giorno === dayOfWeek)
-  ))
+
+  return false
 }
 
 function PrefBadge({ preferenza }) {

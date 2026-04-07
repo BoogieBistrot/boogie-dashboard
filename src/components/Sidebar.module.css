@@ -1,5 +1,6 @@
 .sidebar { width: 240px; min-width: 240px; background: #1A1208; border-right: none; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; z-index: 10; flex-shrink: 0; }
-.logo { padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 12px; }
+.logo { padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 12px; background: none; border-left: none; border-right: none; border-top: none; width: 100%; text-align: left; cursor: pointer; transition: background 0.15s; font-family: var(--font-body); }
+.logo:hover { background: rgba(255,255,255,0.05); }
 .logoImg { height: 36px; width: auto; }
 .logoText { font-size: 1.1rem; font-weight: 700; color: #fff; line-height: 1.2; font-family: var(--font-display); }
 .logoSub { font-size: 0.72rem; color: rgba(255,255,255,0.45); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500; margin-top: 2px; }
@@ -18,7 +19,7 @@
 @media (max-width: 768px) {
   .sidebar { display: none; }
   .mobileBar { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: #1A1208; border-bottom: none; position: sticky; top: 0; z-index: 50; }
-  .mobileLogoRow { display: flex; align-items: center; gap: 10px; }
+  .mobileLogoRow { display: flex; align-items: center; gap: 10px; background: none; border: none; cursor: pointer; padding: 0; }
   .mobileTitle { font-size: 1rem; font-weight: 700; color: #fff; font-family: var(--font-display); }
   .hamburger { background: none; border: 1px solid rgba(255,255,255,0.2); border-radius: var(--radius-sm); color: #fff; padding: 6px 12px; cursor: pointer; font-family: var(--font-body); transition: all 0.15s; font-weight: 600; display: flex; align-items: center; justify-content: center; }
   .hamburger:hover { border-color: var(--accent); color: var(--accent); }

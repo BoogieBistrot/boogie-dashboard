@@ -27,13 +27,13 @@ export default function Sidebar({ view, onNav, onLogout }) {
 
   const navContent = (
     <>
-      <div className={styles.logo}>
+      <button className={styles.logo} onClick={() => handleNav('home')}>
         <img src="/Logo-Gold.svg" alt="Boogie Bistrot" className={styles.logoImg} />
         <div>
           <div className={styles.logoText}>Boogie Bistrot</div>
           <div className={styles.logoSub}>Gestionale</div>
         </div>
-      </div>
+      </button>
       <nav className={styles.nav}>
         {NAV_ITEMS.map((item) => {
           if (item.section) return (
@@ -69,10 +69,10 @@ export default function Sidebar({ view, onNav, onLogout }) {
     <>
       <aside className={styles.sidebar}>{navContent}</aside>
       <div className={styles.mobileBar}>
-        <div className={styles.mobileLogoRow}>
+        <button className={styles.mobileLogoRow} onClick={() => handleNav('home')}>
           <img src="/Logo-Gold.svg" alt="" style={{ height: '24px' }} />
           <span className={styles.mobileTitle}>Boogie Bistrot</span>
-        </div>
+        </button>
         <button className={styles.hamburger} onClick={() => setMobileOpen(o => !o)}>
           {mobileOpen ? <IconClose size={20} weight="regular" /> : <IconMenu size={20} weight="regular" />}
         </button>

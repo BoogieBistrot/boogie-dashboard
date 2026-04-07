@@ -1,5 +1,19 @@
 // netlify/functions/gestisci-prenotazione.js
 
+async function aggiungiTagBrevo(email, nuoviTag, apiKey) {
+  const brevoHeaders = { 'Accept': 'application/json', 'Content-Type': 'application/json', 'api-key': apiKey }
+  const contactRes = await fetch(`https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}`, { headers: brevoHeaders })
+  if (!contactRes.ok) return
+  const contact = await contactRes.json()
+  const tagsEsistenti = contact.tags || []
+  const tagsMerged = [...new Set([...tagsEsistenti, ...nuoviTag])]
+  await fetch(`https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}`, {
+    method: 'PUT',
+    headers: brevoHeaders,
+    body: JSON.stringify({ tags: tagsMerged })
+  })
+}
+
 exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -27,27 +41,34 @@ exports.handler = async (event) => {
 
   // PATCH — modifica prenotazione esistente
   if (event.httpMethod === 'PATCH' || body.action === 'edit') {
-    const { id, nome, data, ora, persone, telefono, email, note, stato } = body
+    const { id, nome, data, ora, persone, telefono, email, note, stato, tags } = body
     if (!id) return { statusCode: 400, headers, body: 'ID mancante' }
 
     try {
+      const fields = {
+        'Nome':     nome,
+        'Data':     data,
+        'Ora':      ora,
+        'Persone':  parseInt(persone),
+        'Telefono': telefono || '',
+        'Email':    email || '',
+        'Note':     note || '',
+        'Stato':    stato,
+      }
+      if (tags !== undefined) fields['Tag'] = tags
+
       const res = await fetch(`${BASE_URL}/${id}`, {
         method: 'PATCH',
         headers: AT_HEADERS,
-        body: JSON.stringify({
-          fields: {
-            'Nome':     nome,
-            'Data':     data,
-            'Ora':      ora,
-            'Persone':  parseInt(persone),
-            'Telefono': telefono || '',
-            'Email':    email || '',
-            'Note':     note || '',
-            'Stato':    stato,
-          }
-        })
+        body: JSON.stringify({ fields })
       })
       if (!res.ok) throw new Error(await res.text())
+
+      // Aggiorna tag su Brevo se c'è email
+      if (email && BREVO_API_KEY && tags && tags.length > 0) {
+        try { await aggiungiTagBrevo(email, tags, BREVO_API_KEY) } catch (e) { console.error('Brevo tag error:', e) }
+      }
+
       return { statusCode: 200, headers, body: JSON.stringify({ success: true }) }
     } catch (err) {
       console.error('PATCH error:', err)
@@ -57,7 +78,7 @@ exports.handler = async (event) => {
 
   // POST — crea nuova prenotazione telefonica
   if (event.httpMethod === 'POST') {
-    const { nome, data, ora, persone, telefono, email, note } = body
+    const { nome, data, ora, persone, telefono, email, note, tags } = body
     if (!nome || !data || !ora || !persone) {
       return { statusCode: 400, headers, body: 'Campi obbligatori mancanti' }
     }
@@ -86,6 +107,7 @@ exports.handler = async (event) => {
             'Consenso Privacy':   true,
             'Consenso Marketing': false,
             'Canale':             'Telefono',
+            'Tag':                tags && tags.length > 0 ? tags : [],
           }
         })
       })
@@ -114,6 +136,9 @@ exports.handler = async (event) => {
               updateEnabled: true,
             })
           })
+          if (tags && tags.length > 0) {
+            await aggiungiTagBrevo(email, tags, BREVO_API_KEY)
+          }
         } catch (brevoErr) {
           console.error('Brevo error:', brevoErr)
         }

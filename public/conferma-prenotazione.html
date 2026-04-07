@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conferma prenotazione — Boogie Bistrot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #F5F0E8;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    #bk-conferma {
+      max-width: 480px;
+      width: 100%;
+      padding: 2.5rem;
+      background: white;
+      border: 1px solid #D4C9B0;
+      position: relative;
+      box-shadow: 0 4px 40px rgba(26,22,16,0.08);
+    }
+
+    #bk-conferma::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #8B6F47, #C4913A);
+    }
+
+    .cf-loading { text-align: center; padding: 2rem 0; }
+    .cf-spinner {
+      width: 40px; height: 40px;
+      border: 3px solid #D4C9B0;
+      border-top-color: #C4913A;
+      border-radius: 50%;
+      animation: cf-spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes cf-spin { to { transform: rotate(360deg); } }
+    .cf-loading p { font-size: 0.9rem; color: #8B6F47; }
+
+    .cf-result { display: none; }
+    .cf-result.show { display: block; }
+
+    .cf-icon {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.5rem;
+    }
+    .cf-icon.success { background: #C4913A; }
+    .cf-icon.already { background: #8B6F47; }
+    .cf-icon.error   { background: #C0392B; }
+    .cf-icon svg { width: 32px; height: 32px; stroke: white; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+    h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 600; color: #1A1610; text-align: center; margin-bottom: 0.75rem; }
+
+    .cf-subtitle { text-align: center; font-size: 0.88rem; color: #8B6F47; line-height: 1.6; margin-bottom: 1.5rem; }
+
+    .cf-details {
+      background: #F5F0E8;
+      border-left: 3px solid #C4913A;
+      padding: 1rem 1.25rem;
+      font-size: 0.88rem;
+      color: #4A4030;
+      line-height: 1.8;
+    }
+    .cf-details strong { color: #1A1610; }
+
+    .cf-label {
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #8B6F47;
+      display: block;
+      margin-top: 1.25rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .cf-tags-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 0.25rem; }
+    .cf-tag {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 12px;
+      border: 1px solid #D4C9B0;
+      font-size: 0.82rem;
+      color: #4A4030;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .cf-tag:hover { border-color: #C4913A; }
+    .cf-tag input { accent-color: #C4913A; cursor: pointer; width: 14px; height: 14px; }
+    .cf-tag:has(input:checked) { border-color: #C4913A; background: rgba(196,145,58,0.08); color: #8B6F47; font-weight: 600; }
+
+    .cf-msg-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #D4C9B0;
+      background: #FDFAF4;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      color: #1A1610;
+      outline: none;
+      resize: vertical;
+      min-height: 80px;
+      transition: border-color 0.2s;
+    }
+    .cf-msg-input:focus { border-color: #C4913A; }
+
+    .cf-confirm-btn {
+      display: block; width: 100%;
+      margin-top: 1rem; padding: 1rem;
+      background: #C4913A; color: white; border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .cf-confirm-btn:hover { background: #8B6F47; }
+    .cf-confirm-btn:disabled { background: #D4C9B0; cursor: not-allowed; }
+
+    .cf-err { font-size: 0.8rem; color: #C0392B; text-align: center; margin-top: 0.5rem; display: none; }
+  </style>
+</head>
+<body>
+<div id="bk-conferma">
+
+  <div class="cf-loading" id="cf-loading">
+    <div class="cf-spinner"></div>
+    <p>Caricamento prenotazione...</p>
+  </div>
+
+  <!-- Form conferma -->
+  <div class="cf-result" id="cf-form">
+    <div class="cf-details" id="cf-details-preview"></div>
+
+    <span class="cf-label">Tag <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:0.75rem;color:#B0A898;">— non visibile al cliente</span></span>
+    <div class="cf-tags-row" id="cf-tags-row"></div>
+
+    <span class="cf-label">Messaggio per il cliente (facoltativo)</span>
+    <textarea class="cf-msg-input" id="cf-messaggio" placeholder="Scrivi qui il messaggio per il cliente..."></textarea>
+    <button class="cf-confirm-btn" id="cf-btn" onclick="cfConferma()">✓ Conferma prenotazione</button>
+    <div class="cf-err" id="cf-err"></div>
+  </div>
+
+  <!-- Successo -->
+  <div class="cf-result" id="cf-success">
+    <div class="cf-icon success">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h2>Prenotazione confermata!</h2>
+    <p class="cf-subtitle">L'email di conferma è stata inviata al cliente.</p>
+    <div class="cf-details" id="cf-details"></div>
+  </div>
+
+  <!-- Già confermata -->
+  <div class="cf-result" id="cf-already">
+    <div class="cf-icon already">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h2>Già confermata</h2>
+    <p class="cf-subtitle">Questa prenotazione era già stata confermata in precedenza.</p>
+  </div>
+
+  <!-- Errore -->
+  <div class="cf-result" id="cf-error">
+    <div class="cf-icon error">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </div>
+    <h2>Qualcosa è andato storto</h2>
+    <p class="cf-subtitle">Non è stato possibile trovare la prenotazione. Riprova o contatta il supporto.</p>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  const BASE_URL = 'https://shimmering-sundae-54b044.netlify.app/.netlify/functions';
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+
+  var _tags = [];
+
+  window.cfToggleTag = function(cb) {
+    if (cb.checked) { _tags.push(cb.value); }
+    else { _tags = _tags.filter(function(t) { return t !== cb.value; }); }
+  };
+
+  async function caricaTag() {
+    try {
+      const res = await fetch(BASE_URL + '/get-tag');
+      const data = await res.json();
+      if (!data.success) return;
+      var row = document.getElementById('cf-tags-row');
+      row.innerHTML = data.tag.map(function(t) {
+        return '<label class="cf-tag"><input type="checkbox" value="' + t.nome + '" onchange="cfToggleTag(this)"> ' + t.nome + '</label>';
+      }).join('');
+    } catch(e) {}
+  }
+
+  function show(elId) {
+    document.getElementById('cf-loading').style.display = 'none';
+    ['cf-form','cf-success','cf-already','cf-error'].forEach(function(el) {
+      document.getElementById(el).classList.remove('show');
+    });
+    document.getElementById(elId).classList.add('show');
+  }
+
+  function formattaDettagli(d) {
+    return '<strong>Nome:</strong> ' + d.nome + '<br>' +
+           '<strong>Data:</strong> ' + d.data + '<br>' +
+           '<strong>Ora:</strong> ' + d.ora + '<br>' +
+           '<strong>Persone:</strong> ' + d.persone +
+           (d.note ? '<br><strong>Note:</strong> ' + d.note : '') +
+           (d.preferenza ? '<br><strong>Preferenza:</strong> ' + d.preferenza : '');
+  }
+
+  async function caricaPrenotazione() {
+    if (!id) { show('cf-error'); return; }
+    try {
+      const res = await fetch(BASE_URL + '/conferma?id=' + id + '&solo_dati=1');
+      const data = await res.json();
+      if (!res.ok || !data.success) { show('cf-error'); return; }
+      if (data.alreadyConfirmed) { show('cf-already'); return; }
+      document.getElementById('cf-details-preview').innerHTML = formattaDettagli(data);
+      show('cf-form');
+    } catch(err) {
+      show('cf-error');
+    }
+  }
+
+  window.cfConferma = async function() {
+    var btn = document.getElementById('cf-btn');
+    var err = document.getElementById('cf-err');
+    var messaggio = document.getElementById('cf-messaggio').value.trim();
+    btn.disabled = true;
+    err.style.display = 'none';
+    try {
+      const res = await fetch(BASE_URL + '/conferma?id=' + id, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messaggio: messaggio, tags: _tags })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error();
+      if (data.alreadyConfirmed) { show('cf-already'); return; }
+      document.getElementById('cf-details').innerHTML = formattaDettagli(data);
+      show('cf-success');
+    } catch(e) {
+      err.textContent = 'Errore durante la conferma. Riprova.';
+      err.style.display = 'block';
+      btn.disabled = false;
+    }
+  };
+
+  caricaPrenotazione();
+  caricaTag();
+})();
+</script>
+</body>
+</html>

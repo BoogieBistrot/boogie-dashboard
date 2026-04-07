@@ -92,6 +92,22 @@
 }
 .toggleOn .toggleDot { background: #2E7D32; }
 
+.cellsRow { display: contents; }
+
+.lockOverlay {
+  position: absolute; inset: 0; z-index: 10;
+  cursor: pointer; border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(var(--bg-rgb, 255,255,255), 0.45);
+  backdrop-filter: blur(1px);
+}
+
+.lockIcon {
+  opacity: 0.18;
+  color: var(--text);
+  pointer-events: none;
+}
+
 /* ── Info Modal ───────────────────────────────────────────────────────────── */
 .modalOverlay {
   position: fixed; inset: 0; background: rgba(0,0,0,0.35);
@@ -121,18 +137,41 @@
 
 @media (max-width: 720px) {
   .fasceRow { grid-template-columns: 1fr; }
-  .gridHeader { display: none; }
+
+  .gridWrap { overflow-y: auto; max-height: 60vh; }
+
+  /* Header sticky con nomi fasce */
+  .gridHeader {
+    display: flex;
+    position: sticky; top: 0; z-index: 5;
+    background: var(--bg);
+    padding: 8px 0 6px;
+    border-bottom: var(--border-style);
+    margin-bottom: 6px;
+  }
+  .dayCol { display: none; }
+  .fasciaHeader {
+    flex: 1; text-align: center;
+    font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  /* Righe giorni */
   .gridRow {
-    grid-template-columns: 1fr;
+    display: flex; flex-direction: column;
     background: var(--bg2); border: var(--border-style);
-    border-radius: var(--radius); padding: 12px 16px;
-    margin-bottom: 8px; gap: 8px;
+    border-radius: var(--radius); padding: 10px 12px;
+    margin-bottom: 6px; gap: 0;
   }
   .dayLabel {
-    font-size: 0.95rem; font-weight: 700; padding-bottom: 8px;
+    font-size: 0.95rem; font-weight: 700;
+    padding-bottom: 8px; margin-bottom: 8px;
     border-bottom: var(--border-style);
   }
-  .cell { justify-content: flex-start; }
-  .toggleBtn { width: auto; }
+  .cellsRow { display: flex; gap: 6px; width: 100%; }
+  .cell { flex: 1; display: flex; min-width: 0; }
+  .toggleBtn { width: 100%; flex: 1; }
+
   .body { max-width: 100%; }
 }

@@ -1,0 +1,9 @@
+.addRow { display: flex; gap: 8px; margin-bottom: 12px; }
+.addInput { flex: 1; border: var(--border-style); border-radius: var(--radius-sm); padding: 9px 12px; font-size: 0.9rem; color: var(--text); font-family: var(--font-body); outline: none; transition: border-color 0.2s; }
+.addInput:focus { border-color: var(--accent); }
+
+.lista { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.tagRow { display: flex; align-items: center; justify-content: space-between; background: var(--bg3); border: var(--border-style); border-radius: var(--radius-sm); padding: 10px 14px; }
+.tagNome { font-size: 0.9rem; color: var(--text); font-weight: 500; }
+
+.nota { font-size: 0.75rem; color: var(--text3); margin-top: 16px; font-style: italic; }

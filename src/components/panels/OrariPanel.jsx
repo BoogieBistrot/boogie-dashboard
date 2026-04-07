@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useOrari } from '../../hooks/useOrari'
-import { IconClock, IconInfo, IconClose } from '../../icons/index.jsx'
+import { IconClock, IconInfo, IconClose, IconLock } from '../../icons/index.jsx'
 import styles from './OrariPanel.module.css'
 
 const GIORNI = [
@@ -87,6 +87,7 @@ export default function OrariPanel() {
   const [msg, setMsg] = useState(null)
   const [infoOpen, setInfoOpen] = useState(false)
   const [editEnabled, setEditEnabled] = useState(false)
+  const [lockModalOpen, setLockModalOpen] = useState(false)
 
   function abilitaModifica() { setEditEnabled(true); setMsg(null) }
   function annullaModifica() {
@@ -180,7 +181,16 @@ export default function OrariPanel() {
         </div>
       </div>
 
-      <div className={styles.body}>
+      <div className={styles.body} style={{ position: 'relative' }}>
+        {!editEnabled && (
+          <div
+            className={styles.lockOverlay}
+            onClick={() => setLockModalOpen(true)}
+            title="Abilita modifica per modificare gli orari"
+          >
+            <IconLock size={48} className={styles.lockIcon} />
+          </div>
+        )}
         {/* — Orari per fascia — */}
         <div className={styles.fasceRow}>
           {FASCE.map(f => (
@@ -209,6 +219,7 @@ export default function OrariPanel() {
         </div>
 
         {/* — Griglia giorni — */}
+        <div className={styles.gridWrap}>
         <div className={styles.grid}>
           <div className={styles.gridHeader}>
             <div className={styles.dayCol} />
@@ -217,29 +228,53 @@ export default function OrariPanel() {
           {GIORNI.map(g => (
             <div key={g.value} className={styles.gridRow}>
               <div className={styles.dayLabel}>{g.label}</div>
-              {FASCE.map(f => {
-                const key = `${g.value}_${f}`
-                const cell = grid[key] || { attivo: false }
-                return (
-                  <div key={f} className={styles.cell}>
-                    <button
-                      type="button"
-                      className={`${styles.toggleBtn} ${cell.attivo ? styles.toggleOn : ''}`}
-                      disabled={!editEnabled}
-                      onClick={() => toggleCell(key)}
-                    >
-                      <span className={styles.toggleDot} />
-                      {cell.attivo ? 'Aperto' : 'Chiuso'}
-                    </button>
-                  </div>
-                )
-              })}
+              <div className={styles.cellsRow}>
+                {FASCE.map(f => {
+                  const key = `${g.value}_${f}`
+                  const cell = grid[key] || { attivo: false }
+                  return (
+                    <div key={f} className={styles.cell}>
+                      <button
+                        type="button"
+                        className={`${styles.toggleBtn} ${cell.attivo ? styles.toggleOn : ''}`}
+                        disabled={!editEnabled}
+                        onClick={() => toggleCell(key)}
+                      >
+                        <span className={styles.toggleDot} />
+                        {cell.attivo ? 'Aperto' : 'Chiuso'}
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           ))}
+        </div>
         </div>
       </div>
 
       {infoOpen && <InfoModal onClose={() => setInfoOpen(false)} />}
+
+      {lockModalOpen && (
+        <div className={styles.modalOverlay} onClick={() => setLockModalOpen(false)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <div className={styles.modalTitolo}><IconLock size={16} /> Modifiche disabilitate</div>
+              <button className="btn-icon" onClick={() => setLockModalOpen(false)}><IconClose size={16} weight="regular" /></button>
+            </div>
+            <div className={styles.modalBody}>
+              <p className={styles.infoText}>Per modificare gli orari, clicca prima su <strong>Abilita modifica</strong> in alto a destra.</p>
+              <button
+                className="btn-primary"
+                style={{ marginTop: '16px' }}
+                onClick={() => { abilitaModifica(); setLockModalOpen(false) }}
+              >
+                Abilita modifica
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
