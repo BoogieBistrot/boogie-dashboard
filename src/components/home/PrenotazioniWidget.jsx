@@ -13,14 +13,18 @@ function formatData(dataStr) {
   return `${GIORNI_NOME[d.getDay()]} ${d.getDate()} ${MESI_NOME[d.getMonth()]}`
 }
 
+function localDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+}
+
 function isOggi(dataStr) {
-  return dataStr === new Date().toISOString().split('T')[0]
+  return dataStr === localDateStr(new Date())
 }
 
 function isBesok(dataStr) {
   const domani = new Date()
   domani.setDate(domani.getDate() + 1)
-  return dataStr === domani.toISOString().split('T')[0]
+  return dataStr === localDateStr(domani)
 }
 
 function getLabelGiorno(dataStr) {
