@@ -31,7 +31,7 @@ async function patchStatRecord(recordId, fields) {
 }
 
 async function callGemini(prompt) {
-  const GEMINI_API_KEY = process.env.MY_NEW_GEMINI_KEY_2026
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY
   if (!GEMINI_API_KEY) throw new Error('Gemini API key mancante')
   const modelli = ['gemini-2.5-flash', 'gemini-2.0-flash-lite-001']
   for (const modello of modelli) {
