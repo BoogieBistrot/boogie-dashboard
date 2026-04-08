@@ -393,7 +393,7 @@ async function patchStatRecord(recordId, fields) {
 async function callGemini(prompt) {
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY
   if (!GEMINI_API_KEY) throw new Error('Gemini API key mancante')
-  const modelli = ['gemini-2.5-flash', 'gemini-2.0-flash-lite-001']
+  const modelli = ['gemini-2.5-flash', 'gemini-2.0-flash']
   for (const modello of modelli) {
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${modello}:generateContent?key=${GEMINI_API_KEY}`,
