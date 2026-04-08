@@ -413,77 +413,129 @@ async function callGemini(prompt) {
 }
 
 // Genera analisi settimanale
-async function generateWeeklyAnalysis(s) {
-  const fmt = d => { const [,m,g] = d.split('-'); return `${g}/${m}` }
-  const prompt = `Sei l'assistente analitico del Boogie Bistrot, un bistrot italiano. Analizza i dati della settimana dal ${fmt(s.dataInizio)} al ${fmt(s.dataFine)} e scrivi un report professionale per le proprietarie del locale.
+async function generateWeeklyAnalysis(s, settimane = []) {
+  const fmt   = d => { const [,m,g] = d.split('-'); return `${g}/${m}` }
+  const round1 = v => Math.round(v * 10) / 10
+  const avg   = arr => arr.length ? round1(arr.reduce((a,b) => a+b, 0) / arr.length) : null
+  const arrow = (val, media, higherIsBetter = true) => {
+    if (media === null || media === 0) return '='
+    const diff = (val - media) / media
+    if (Math.abs(diff) < 0.05) return '='
+    return (diff > 0) === higherIsBetter ? '↑' : '↓'
+  }
 
-DATI SETTIMANA:
-- Prenotazioni: ${s.prenotazioni} totali (sito web: ${s.prenotazioniSito}, telefono: ${s.prenotazioniTel}${s.prenotazioniEventi ? `, eventi: ${s.prenotazioniEventi}` : ''})
-- Coperti: ${s.persone} totali (Pranzo: ${s.copertipranzo}, Aperitivo: ${s.copertiAperitivo}, Cena: ${s.copertiCena})
+  const altre = settimane.filter(w => w.settimana !== s.settimana && w.dataInizio !== s.dataInizio)
+  const mPren  = avg(altre.map(w => w.prenotazioniTotali || w.prenotazioni || 0))
+  const mCop   = avg(altre.map(w => w.personeTotali || w.persone || 0))
+  const mCanc  = avg(altre.map(w => w.tassoCancellazione || 0))
+  const mLead  = avg(altre.map(w => w.leadTime || 0))
+  const mGruppo = avg(altre.map(w => w.dimGruppo || 0))
+  const nRef   = altre.length
+
+  const sintesi = nRef > 0
+    ? `Coperti: ${s.persone} vs ${mCop} media ${arrow(s.persone, mCop)}
+Prenotazioni: ${s.prenotazioni} vs ${mPren} media ${arrow(s.prenotazioni, mPren)}
+Cancellazioni: ${s.tassoCancellazione}% vs ${mCanc}% media ${arrow(s.tassoCancellazione, mCanc, false)}
+Lead time: ${s.leadTime}g vs ${mLead}g media ${arrow(s.leadTime, mLead)}
+Dim. gruppo: ${s.dimGruppo} pers. vs ${mGruppo} pers. media ${arrow(s.dimGruppo, mGruppo)}`
+    : `Coperti: ${s.persone} | Prenotazioni: ${s.prenotazioni} | Cancellazioni: ${s.tassoCancellazione}% | Lead time: ${s.leadTime}g`
+
+  return callGemini(`Sei l'assistente analitico del Boogie Bistrot. Genera un report settimanale strutturato per le proprietarie.
+
+DATI SETTIMANA (${fmt(s.dataInizio)} – ${fmt(s.dataFine)}):
+- Prenotazioni: ${s.prenotazioni} totali (sito: ${s.prenotazioniSito}, tel: ${s.prenotazioniTel}${s.prenotazioniEventi ? `, eventi: ${s.prenotazioniEventi}` : ''})
+- Coperti: ${s.persone} (Pranzo: ${s.copertipranzo}, Aperitivo: ${s.copertiAperitivo}, Cena: ${s.copertiCena})
 - Cancellazioni: ${s.cancellazioni} (${s.tassoCancellazione}%)
-- Anticipo medio prenotazione: ${s.leadTime} giorni prima dell'arrivo
+- Lead time medio: ${s.leadTime} giorni
 - Dimensione media gruppo: ${s.dimGruppo} persone
-- Clienti: ${s.clientiUnici} unici (${s.clientiRitorno} di ritorno)
-- Giorno più frequentato: ${s.giornopiuPieno} — meno frequentato: ${s.giornopiuVuoto}
+- Clienti: ${s.clientiUnici} unici, ${s.clientiRitorno} di ritorno
+- Giorno più pieno: ${s.giornopiuPieno} — più vuoto: ${s.giornopiuVuoto}
 - Slot più richiesto: ${s.slotPiuRichiesto} — fascia meno richiesta: ${s.fasciaMenoRichiesta}
-- Prenotazioni last minute (stesso giorno o giorno prima): ${s.lastMinute}
+- Last minute: ${s.lastMinute}
 
-Scrivi esattamente 3 paragrafi senza titoli e senza elenchi puntati:
-1. Panoramica generale della settimana
-2. Comportamenti dei clienti (orari, gruppi, canali, fidelizzazione)
-3. Un consiglio pratico e specifico per la prossima settimana
+Rispondi ESCLUSIVAMENTE con questo formato, nessun testo aggiuntivo fuori dalla struttura:
 
-Massimo 180 parole totali. Tono professionale e diretto.`
-  return callGemini(prompt)
+📈 SINTESI RAPIDA — ${fmt(s.dataInizio)} / ${fmt(s.dataFine)} vs Media
+${sintesi}
+[Una frase sintetica sul trend principale. Max 20 parole.]
+
+📦 DASHBOARD ANALITICA
+
+✅ PRO
+• [punto di forza 1 — max 15 parole]
+• [punto di forza 2 — max 15 parole]
+
+⚠️ CRITICITÀ
+• [criticità 1 — max 15 parole]
+• [criticità 2 — max 15 parole]
+
+💡 OPPORTUNITÀ & AZIONI
+Ottimizzazione Flussi: [1 azione concreta su prenotazioni/arrivi]
+Gestione Staff: [1 azione concreta su turni/risorse]
+Strategia di Crescita: [1 azione concreta per aumentare volume o fidelizzazione]`)
 }
 
 // Genera analisi globale su tutte le settimane
 async function generateGlobalAnalysis(settimane) {
-  const n = settimane.length
-  const avg = arr => arr.length ? Math.round(arr.reduce((a,b)=>a+b,0)/arr.length*10)/10 : 0
-  const mediaPrenotazioni = avg(settimane.map(s => s.prenotazioniTotali))
-  const mediaCoperti      = avg(settimane.map(s => s.personeTotali))
-  const mediaCancellaz    = avg(settimane.map(s => s.tassoCancellazione))
-  const mediaLeadTime     = avg(settimane.map(s => s.leadTime))
-  const mediaDimGruppo    = avg(settimane.map(s => s.dimGruppo))
-  const mediaClienti      = avg(settimane.map(s => s.clientiUnici))
-  const mediaRitorno      = avg(settimane.map(s => s.clientiRitorno))
-
+  const n    = settimane.length
+  const avg  = arr => arr.length ? Math.round(arr.reduce((a,b)=>a+b,0)/arr.length*10)/10 : 0
   const mode = arr => {
     const freq = {}
     arr.forEach(v => { if(v) freq[v] = (freq[v]||0)+1 })
     return Object.entries(freq).sort((a,b)=>b[1]-a[1])[0]?.[0] || '—'
   }
-  const giornoFrequente = mode(settimane.map(s => (s.giornopiuPieno||'').replace(/\s*\(.*\)/,'')))
-  const slotFrequente   = mode(settimane.map(s => s.slotPiuRichiesto))
-  const fasciaPocoRich  = mode(settimane.map(s => s.fasciaMenoRichiesta))
-
   const fmt = d => { const [,m,g] = (d||'').split('-'); return `${g}/${m}` }
+
+  const mPren   = avg(settimane.map(s => s.prenotazioniTotali || 0))
+  const mCop    = avg(settimane.map(s => s.personeTotali || 0))
+  const mCanc   = avg(settimane.map(s => s.tassoCancellazione || 0))
+  const mLead   = avg(settimane.map(s => s.leadTime || 0))
+  const mGruppo = avg(settimane.map(s => s.dimGruppo || 0))
+  const mClienti = avg(settimane.map(s => s.clientiUnici || 0))
+  const mRitorno = avg(settimane.map(s => s.clientiRitorno || 0))
+  const giornoTop = mode(settimane.map(s => (s.giornopiuPieno||'').replace(/\s*\(.*\)/,'')))
+  const slotTop   = mode(settimane.map(s => s.slotPiuRichiesto))
+  const fasciaMin = mode(settimane.map(s => s.fasciaMenoRichiesta))
   const dal = fmt(settimane[settimane.length-1].dataInizio)
   const al  = fmt(settimane[0].dataFine)
 
-  const prompt = `Sei l'assistente analitico del Boogie Bistrot, un bistrot italiano. Analizza i dati aggregati delle ultime ${n} settimane (dal ${dal} al ${al}) e scrivi un report strategico per le proprietarie.
+  return callGemini(`Sei l'assistente analitico del Boogie Bistrot. Genera un report globale strategico per le proprietarie.
+
+PERIODO: ${n} settimane (${dal} – ${al})
 
 MEDIE SETTIMANALI:
-- Prenotazioni: ${mediaPrenotazioni} a settimana
-- Coperti: ${mediaCoperti} a settimana
-- Tasso cancellazione: ${mediaCancellaz}%
-- Anticipo medio prenotazione: ${mediaLeadTime} giorni
-- Dimensione media gruppo: ${mediaDimGruppo} persone
-- Clienti unici: ${mediaClienti}/sett. (di ritorno: ${mediaRitorno})
+- Prenotazioni: ${mPren}/sett.
+- Coperti: ${mCop}/sett.
+- Tasso cancellazione: ${mCanc}%
+- Lead time medio: ${mLead} giorni
+- Dimensione media gruppo: ${mGruppo} persone
+- Clienti unici: ${mClienti}/sett. (di ritorno: ${mRitorno})
 
 PATTERN RICORRENTI:
-- Giorno più frequentato: ${giornoFrequente}
-- Slot più richiesto: ${slotFrequente}
-- Fascia meno richiesta: ${fasciaPocoRich}
+- Giorno più frequentato: ${giornoTop}
+- Slot più richiesto: ${slotTop}
+- Fascia meno richiesta: ${fasciaMin}
 
-Scrivi esattamente 3 paragrafi senza titoli e senza elenchi puntati:
-1. Valutazione dell'andamento generale del periodo
-2. Pattern di comportamento dei clienti e trend emergenti
-3. Due azioni strategiche concrete per migliorare le performance
+Rispondi ESCLUSIVAMENTE con questo formato, nessun testo aggiuntivo fuori dalla struttura:
 
-Massimo 200 parole totali. Tono professionale e strategico.`
-  return callGemini(prompt)
+📈 TREND GLOBALE — ${n} settimane (${dal} – ${al})
+Media coperti: ${mCop}/sett. | Media prenotazioni: ${mPren}/sett. | Cancellazioni: ${mCanc}% | Lead time: ${mLead}g
+[Una frase sintetica sull'andamento generale del periodo. Max 20 parole.]
+
+📦 DASHBOARD ANALITICA
+
+✅ PUNTI DI FORZA
+• [punto di forza ricorrente 1 — max 15 parole]
+• [punto di forza ricorrente 2 — max 15 parole]
+
+⚠️ CRITICITÀ RICORRENTI
+• [criticità strutturale 1 — max 15 parole]
+• [criticità strutturale 2 — max 15 parole]
+
+💡 AZIONI STRATEGICHE
+Ottimizzazione Flussi: [1 azione concreta basata sui pattern di prenotazione]
+Gestione Staff: [1 azione concreta su organizzazione risorse]
+Strategia di Crescita: [1 azione concreta per colmare i gap emersi dal periodo]`)
 }
 
 // Recupera tutti i record statistiche per l'analisi globale
@@ -644,10 +696,16 @@ exports.handler = async (event) => {
     const msg = `Statistiche ${settimana} salvate (${result.prenotazioni} prenotazioni, ${result.persone} persone)`
     console.log(msg)
 
+    // Fetch storico per analisi AI (usato sia per weekly che per global)
+    let tutteSettimane = []
+    try {
+      tutteSettimane = await fetchAllStatsRecords()
+    } catch (e) { console.error('fetchAllStatsRecords fallita:', e.message) }
+
     // Analisi AI settimanale
     let analisiWeek = ''
     try {
-      analisiWeek = await generateWeeklyAnalysis(result.statsForAI)
+      analisiWeek = await generateWeeklyAnalysis(result.statsForAI, tutteSettimane)
       await patchStatRecord(result.recordId, { 'Analisi AI': analisiWeek })
       console.log('Analisi AI settimanale salvata')
     } catch (e) { console.error('Analisi AI settimanale fallita:', e.message) }
@@ -655,19 +713,18 @@ exports.handler = async (event) => {
     // Analisi AI globale (su tutte le settimane) salvata nel record corrente
     let analisiGlobal = ''
     try {
-      const tutteSettimane = await fetchAllStatsRecords()
       analisiGlobal = await generateGlobalAnalysis(tutteSettimane)
       await patchStatRecord(result.recordId, { 'Analisi AI Globale': analisiGlobal })
       console.log('Analisi AI globale salvata')
     } catch (e) { console.error('Analisi AI globale fallita:', e.message) }
 
-    // Newsletter
-    if (analisiWeek) {
-      try {
-        const tutteSettimane = await fetchAllStatsRecords()
-        await sendNewsletter(analisiWeek, analisiGlobal, result.statsForAI, tutteSettimane.length)
-      } catch (e) { console.error('Newsletter fallita:', e.message) }
-    }
+    // Newsletter (temporaneamente disabilitata)
+    // if (analisiWeek) {
+    //   try {
+    //     const tutteSettimane = await fetchAllStatsRecords()
+    //     await sendNewsletter(analisiWeek, analisiGlobal, result.statsForAI, tutteSettimane.length)
+    //   } catch (e) { console.error('Newsletter fallita:', e.message) }
+    // }
 
     return {
       statusCode: 200,
