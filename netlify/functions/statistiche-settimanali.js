@@ -414,65 +414,32 @@ async function callGemini(prompt) {
 
 // Genera analisi settimanale
 async function generateWeeklyAnalysis(s, settimane = []) {
-  const fmt   = d => { const [,m,g] = d.split('-'); return `${g}/${m}` }
-  const round1 = v => Math.round(v * 10) / 10
-  const avg   = arr => arr.length ? round1(arr.reduce((a,b) => a+b, 0) / arr.length) : null
-  const arrow = (val, media, higherIsBetter = true) => {
-    if (media === null || media === 0) return '='
-    const diff = (val - media) / media
-    if (Math.abs(diff) < 0.05) return '='
-    return (diff > 0) === higherIsBetter ? '↑' : '↓'
-  }
+  const fmt = d => { const [,m,g] = d.split('-'); return `${g}/${m}` }
 
-  const altre = settimane.filter(w => w.settimana !== s.settimana && w.dataInizio !== s.dataInizio)
-  const mPren  = avg(altre.map(w => w.prenotazioniTotali || w.prenotazioni || 0))
-  const mCop   = avg(altre.map(w => w.personeTotali || w.persone || 0))
-  const mCanc  = avg(altre.map(w => w.tassoCancellazione || 0))
-  const mLead  = avg(altre.map(w => w.leadTime || 0))
-  const mGruppo = avg(altre.map(w => w.dimGruppo || 0))
-  const nRef   = altre.length
+  return callGemini(`Sei l'assistente analitico del Boogie Bistrot. Analizza i dati della settimana ${fmt(s.dataInizio)}–${fmt(s.dataFine)} e produci un report per le proprietarie.
 
-  const sintesi = nRef > 0
-    ? `Coperti: ${s.persone} vs ${mCop} media ${arrow(s.persone, mCop)}
-Prenotazioni: ${s.prenotazioni} vs ${mPren} media ${arrow(s.prenotazioni, mPren)}
-Cancellazioni: ${s.tassoCancellazione}% vs ${mCanc}% media ${arrow(s.tassoCancellazione, mCanc, false)}
-Lead time: ${s.leadTime}g vs ${mLead}g media ${arrow(s.leadTime, mLead)}
-Dim. gruppo: ${s.dimGruppo} pers. vs ${mGruppo} pers. media ${arrow(s.dimGruppo, mGruppo)}`
-    : `Coperti: ${s.persone} | Prenotazioni: ${s.prenotazioni} | Cancellazioni: ${s.tassoCancellazione}% | Lead time: ${s.leadTime}g`
-
-  return callGemini(`Sei l'assistente analitico del Boogie Bistrot. Genera un report settimanale strutturato per le proprietarie.
-
-DATI SETTIMANA (${fmt(s.dataInizio)} – ${fmt(s.dataFine)}):
-- Prenotazioni: ${s.prenotazioni} totali (sito: ${s.prenotazioniSito}, tel: ${s.prenotazioniTel}${s.prenotazioniEventi ? `, eventi: ${s.prenotazioniEventi}` : ''})
+DATI:
+- Prenotazioni: ${s.prenotazioni} (sito: ${s.prenotazioniSito}, tel: ${s.prenotazioniTel}${s.prenotazioniEventi ? `, eventi: ${s.prenotazioniEventi}` : ''})
 - Coperti: ${s.persone} (Pranzo: ${s.copertipranzo}, Aperitivo: ${s.copertiAperitivo}, Cena: ${s.copertiCena})
-- Cancellazioni: ${s.cancellazioni} (${s.tassoCancellazione}%)
-- Lead time medio: ${s.leadTime} giorni
-- Dimensione media gruppo: ${s.dimGruppo} persone
-- Clienti: ${s.clientiUnici} unici, ${s.clientiRitorno} di ritorno
+- Cancellazioni: ${s.cancellazioni} (${s.tassoCancellazione}%) — Lead time: ${s.leadTime}g — Gruppo medio: ${s.dimGruppo} pers.
+- Clienti: ${s.clientiUnici} unici, ${s.clientiRitorno} di ritorno — Last minute: ${s.lastMinute}
 - Giorno più pieno: ${s.giornopiuPieno} — più vuoto: ${s.giornopiuVuoto}
 - Slot più richiesto: ${s.slotPiuRichiesto} — fascia meno richiesta: ${s.fasciaMenoRichiesta}
-- Last minute: ${s.lastMinute}
 
-Rispondi ESCLUSIVAMENTE con questo formato, nessun testo aggiuntivo fuori dalla struttura:
-
-📈 SINTESI RAPIDA — ${fmt(s.dataInizio)} / ${fmt(s.dataFine)} vs Media
-${sintesi}
-[Una frase sintetica sul trend principale. Max 20 parole.]
-
-📦 DASHBOARD ANALITICA
+Rispondi ESCLUSIVAMENTE con questo formato, nessun testo fuori dalla struttura:
 
 ✅ PRO
-• [punto di forza 1 — max 15 parole]
-• [punto di forza 2 — max 15 parole]
+• [punto di forza 1 — max 12 parole]
+• [punto di forza 2 — max 12 parole]
 
 ⚠️ CRITICITÀ
-• [criticità 1 — max 15 parole]
-• [criticità 2 — max 15 parole]
+• [criticità 1 — max 12 parole]
+• [criticità 2 — max 12 parole]
 
 💡 OPPORTUNITÀ & AZIONI
-Ottimizzazione Flussi: [1 azione concreta su prenotazioni/arrivi]
-Gestione Staff: [1 azione concreta su turni/risorse]
-Strategia di Crescita: [1 azione concreta per aumentare volume o fidelizzazione]`)
+Ottimizzazione Flussi: [azione concreta — max 15 parole]
+Gestione Staff: [azione concreta — max 15 parole]
+Strategia di Crescita: [azione concreta — max 15 parole]`)
 }
 
 // Genera analisi globale su tutte le settimane
@@ -499,43 +466,25 @@ async function generateGlobalAnalysis(settimane) {
   const dal = fmt(settimane[settimane.length-1].dataInizio)
   const al  = fmt(settimane[0].dataFine)
 
-  return callGemini(`Sei l'assistente analitico del Boogie Bistrot. Genera un report globale strategico per le proprietarie.
+  return callGemini(`Sei l'assistente analitico del Boogie Bistrot. Analizza ${n} settimane (${dal}–${al}) e produci un report strategico per le proprietarie.
 
-PERIODO: ${n} settimane (${dal} – ${al})
+MEDIE: ${mPren} pren./sett. — ${mCop} coperti/sett. — ${mCanc}% cancellazioni — lead time ${mLead}g — gruppo ${mGruppo} pers. — ${mClienti} clienti unici/sett. (${mRitorno} di ritorno)
+PATTERN: giorno top ${giornoTop} — slot top ${slotTop} — fascia debole ${fasciaMin}
 
-MEDIE SETTIMANALI:
-- Prenotazioni: ${mPren}/sett.
-- Coperti: ${mCop}/sett.
-- Tasso cancellazione: ${mCanc}%
-- Lead time medio: ${mLead} giorni
-- Dimensione media gruppo: ${mGruppo} persone
-- Clienti unici: ${mClienti}/sett. (di ritorno: ${mRitorno})
+Rispondi ESCLUSIVAMENTE con questo formato, nessun testo fuori dalla struttura:
 
-PATTERN RICORRENTI:
-- Giorno più frequentato: ${giornoTop}
-- Slot più richiesto: ${slotTop}
-- Fascia meno richiesta: ${fasciaMin}
+✅ PRO
+• [punto di forza ricorrente 1 — max 12 parole]
+• [punto di forza ricorrente 2 — max 12 parole]
 
-Rispondi ESCLUSIVAMENTE con questo formato, nessun testo aggiuntivo fuori dalla struttura:
+⚠️ CRITICITÀ
+• [criticità strutturale 1 — max 12 parole]
+• [criticità strutturale 2 — max 12 parole]
 
-📈 TREND GLOBALE — ${n} settimane (${dal} – ${al})
-Media coperti: ${mCop}/sett. | Media prenotazioni: ${mPren}/sett. | Cancellazioni: ${mCanc}% | Lead time: ${mLead}g
-[Una frase sintetica sull'andamento generale del periodo. Max 20 parole.]
-
-📦 DASHBOARD ANALITICA
-
-✅ PUNTI DI FORZA
-• [punto di forza ricorrente 1 — max 15 parole]
-• [punto di forza ricorrente 2 — max 15 parole]
-
-⚠️ CRITICITÀ RICORRENTI
-• [criticità strutturale 1 — max 15 parole]
-• [criticità strutturale 2 — max 15 parole]
-
-💡 AZIONI STRATEGICHE
-Ottimizzazione Flussi: [1 azione concreta basata sui pattern di prenotazione]
-Gestione Staff: [1 azione concreta su organizzazione risorse]
-Strategia di Crescita: [1 azione concreta per colmare i gap emersi dal periodo]`)
+💡 OPPORTUNITÀ & AZIONI
+Ottimizzazione Flussi: [azione concreta — max 15 parole]
+Gestione Staff: [azione concreta — max 15 parole]
+Strategia di Crescita: [azione concreta — max 15 parole]`)
 }
 
 // Recupera tutti i record statistiche per l'analisi globale
@@ -570,34 +519,53 @@ async function sendNewsletter(analisiWeek, analisiGlobal, s, nSettimane) {
   if (!BREVO_API_KEY) { console.warn('Brevo non configurato, newsletter saltata'); return }
 
   const fmt = d => { const [,m,g] = d.split('-'); return `${g}/${m}` }
-  const toP = text => text.split('\n').filter(Boolean).map(p => `<p style="margin:0 0 12px;">${p}</p>`).join('')
+  const kpi = (val, label) => `<td style="padding:0 8px 8px 0;"><div style="background:#f5f5f5;padding:12px 18px;border-radius:6px;text-align:center;"><div style="font-size:22px;font-weight:bold;color:#c8a96e;">${val}</div><div style="font-size:10px;text-transform:uppercase;color:#888;margin-top:3px;">${label}</div></div></td>`
+
+  const parseSection = (text, emoji) => {
+    const match = text.match(new RegExp(`${emoji}[^\\n]*\\n([\\s\\S]*?)(?=✅|⚠️|💡|$)`))
+    return (match?.[1] || '').trim().split('\n').filter(Boolean)
+      .map(l => `<div style="margin-bottom:8px;font-size:14px;line-height:1.5;">${l}</div>`).join('')
+  }
+
+  const box = (emoji, title, content, bg, border) =>
+    `<td style="width:33%;vertical-align:top;padding:0 6px;">
+      <div style="background:${bg};border-top:3px solid ${border};border-radius:6px;padding:16px 14px;height:100%;box-sizing:border-box;">
+        <div style="font-size:11px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;color:${border};margin-bottom:12px;">${emoji} ${title}</div>
+        ${content}
+      </div>
+    </td>`
+
+  const buildBoxes = (text) => `
+    <table width="100%" cellpadding="0" cellspacing="0" style="table-layout:fixed;">
+      <tr>
+        ${box('✅','PRO', parseSection(text,'✅'), '#f0faf0', '#2e7d32')}
+        ${box('⚠️','CRITICITÀ', parseSection(text,'⚠️'), '#fff8f0', '#e65100')}
+        ${box('💡','OPPORTUNITÀ', parseSection(text,'💡'), '#f0f4ff', '#1565c0')}
+      </tr>
+    </table>`
 
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family:Georgia,serif;color:#333;background:#f9f9f9;margin:0;padding:0;">
-<div style="max-width:600px;margin:0 auto;background:#fff;">
+<div style="max-width:640px;margin:0 auto;background:#fff;">
   <div style="background:#1a1a1a;color:#fff;padding:28px 32px;text-align:center;">
     <div style="font-size:11px;letter-spacing:4px;color:#c8a96e;margin-bottom:8px;text-transform:uppercase;">Boogie Bistrot</div>
     <div style="font-size:20px;font-weight:bold;letter-spacing:1px;">Report Settimanale</div>
     <div style="font-size:13px;color:#aaa;margin-top:6px;">${fmt(s.dataInizio)} – ${fmt(s.dataFine)}</div>
   </div>
-  <div style="padding:28px 32px;border-bottom:1px solid #eee;">
-    <div style="font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#999;margin-bottom:16px;">Dati della settimana</div>
-    <div style="display:flex;flex-wrap:wrap;gap:12px;">
-      ${[
-        ['Prenotazioni', s.prenotazioni],
-        ['Coperti', s.persone],
-        ['Cancellazioni', s.tassoCancellazione + '%'],
-        ['Anticipo medio', s.leadTime + 'g'],
-      ].map(([label, val]) => `<div style="background:#f5f5f5;padding:12px 18px;border-radius:6px;min-width:110px;"><div style="font-size:22px;font-weight:bold;color:#c8a96e;">${val}</div><div style="font-size:10px;text-transform:uppercase;color:#888;margin-top:3px;">${label}</div></div>`).join('')}
-    </div>
+  <div style="padding:24px 32px;border-bottom:1px solid #eee;">
+    <table cellpadding="0" cellspacing="0">
+      <tr>
+        ${kpi(s.prenotazioni,'Prenotazioni')}${kpi(s.persone,'Coperti')}${kpi(s.tassoCancellazione+'%','Cancellazioni')}${kpi(s.leadTime+'g','Anticipo medio')}
+      </tr>
+    </table>
   </div>
-  <div style="padding:28px 32px;border-bottom:1px solid #eee;">
-    <div style="font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#999;margin-bottom:16px;">Analisi della settimana</div>
-    <div style="line-height:1.75;font-size:15px;">${toP(analisiWeek)}</div>
+  <div style="padding:24px 32px;border-bottom:1px solid #eee;">
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#999;margin-bottom:16px;">Analisi settimana</div>
+    ${buildBoxes(analisiWeek)}
   </div>
-  <div style="padding:28px 32px;border-bottom:1px solid #eee;">
-    <div style="font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#999;margin-bottom:6px;">Analisi globale</div>
-    <div style="font-size:12px;color:#bbb;margin-bottom:14px;">${nSettimane} settimane analizzate</div>
-    <div style="line-height:1.75;font-size:15px;">${toP(analisiGlobal)}</div>
+  <div style="padding:24px 32px;border-bottom:1px solid #eee;">
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#999;margin-bottom:4px;">Trend globale</div>
+    <div style="font-size:12px;color:#bbb;margin-bottom:16px;">${nSettimane} settimane analizzate</div>
+    ${buildBoxes(analisiGlobal)}
   </div>
   <div style="padding:20px 32px;text-align:center;font-size:11px;color:#bbb;">
     Report automatico generato ogni domenica sera • Boogie Bistrot Analytics
