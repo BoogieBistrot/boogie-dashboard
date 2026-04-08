@@ -281,12 +281,12 @@ exports.handler = async (event) => {
       console.log('✓ Analisi globale salvata')
     } catch (e) { console.error('✗ Analisi globale:', e.message) }
 
-    // Newsletter con l'ultima settimana (temporaneamente disabilitata)
-    // if (ultimoRecord.analisiAi && analisiGlobal) {
-    //   try {
-    //     await sendNewsletter(ultimoRecord.analisiAi, analisiGlobal, ultimoRecord, settimane.length)
-    //   } catch (e) { console.error('✗ Newsletter:', e.message) }
-    // }
+    // Newsletter con l'ultima settimana
+    if (ultimoRecord.analisiAi && analisiGlobal) {
+      try {
+        await sendNewsletter(ultimoRecord.analisiAi, analisiGlobal, ultimoRecord, settimane.length)
+      } catch (e) { console.error('✗ Newsletter:', e.message) }
+    }
 
     return {
       statusCode: 200,
