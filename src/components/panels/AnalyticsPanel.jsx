@@ -152,19 +152,51 @@ function LineChart({ settimane }) {
 
 function AnalisiAI({ testo, titolo }) {
   if (!testo) return null
-  const righe = testo.split('\n').filter(Boolean)
+
+  const parseSection = (text, emoji) => {
+    const match = text.match(new RegExp(`${emoji}[^\\n]*\\n([\\s\\S]*?)(?=✅|⚠️|💡|$)`))
+    return (match?.[1] || '').trim().split('\n').filter(Boolean)
+  }
+
+  const pro  = parseSection(testo, '✅')
+  const crit = parseSection(testo, '⚠️')
+  const opp  = parseSection(testo, '💡')
+
   return (
     <div className={styles.analisiAi}>
       <div className={styles.analisiAiHeader}>
         <span className={styles.analisiAiIcon}>✦</span>
         <span className={styles.analisiAiTitolo}>{titolo || 'Analisi AI'}</span>
       </div>
-      <div className={styles.analisiAiBody}>
-        {righe.map((r, i) => {
-          if (r.startsWith('•')) return <div key={i} className={styles.analisiAiBullet}>{r}</div>
-          if (r.match(/^[✅⚠️💡]/u)) return <div key={i} className={styles.analisiAiSezione}>{r}</div>
-          return <p key={i}>{r}</p>
-        })}
+      <div className={styles.analisiAiBoxes}>
+        <div className={`${styles.analisiBox} ${styles.analisiBoxPro}`}>
+          <div className={styles.analisiBoxTitle}>✅ PRO</div>
+          <ul className={styles.analisiBoxList}>
+            {pro.map((r, i) => <li key={i}>{r.replace(/^•\s*/, '')}</li>)}
+          </ul>
+        </div>
+        <div className={`${styles.analisiBox} ${styles.analisiBoxCrit}`}>
+          <div className={styles.analisiBoxTitle}>⚠️ CRITICITÀ</div>
+          <ul className={styles.analisiBoxList}>
+            {crit.map((r, i) => <li key={i}>{r.replace(/^•\s*/, '')}</li>)}
+          </ul>
+        </div>
+        <div className={`${styles.analisiBox} ${styles.analisiBoxOpp}`}>
+          <div className={styles.analisiBoxTitle}>💡 OPPORTUNITÀ & AZIONI</div>
+          <div className={styles.analisiBoxActions}>
+            {opp.map((r, i) => {
+              const colonIdx = r.indexOf(':')
+              const label = colonIdx > -1 ? r.slice(0, colonIdx) : r
+              const value = colonIdx > -1 ? r.slice(colonIdx + 1).trim() : ''
+              return (
+                <div key={i} className={styles.analisiBoxAction}>
+                  <span className={styles.analisiBoxActionLabel}>{label}</span>
+                  {value && <span>{value}</span>}
+                </div>
+              )
+            })}
+          </div>
+        </div>
       </div>
     </div>
   )

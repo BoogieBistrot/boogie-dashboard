@@ -357,10 +357,10 @@
 
 /* Analisi AI */
 .analisiAi {
-  border: 1px solid var(--accent);
+  border: var(--border-style);
   border-radius: var(--radius);
-  padding: 22px 26px;
-  background: color-mix(in srgb, var(--accent) 4%, var(--bg2));
+  padding: 18px 20px;
+  background: var(--bg2);
 }
 
 .analisiAiHeader {
@@ -383,44 +383,84 @@
   color: var(--accent);
 }
 
-.analisiAiBody {
-  font-size: 0.9rem;
-  line-height: 1.75;
-  color: var(--text2);
+.analisiAiBoxes {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
 }
 
-.analisiAiBody p {
-  margin: 0 0 10px;
+.analisiBox {
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  border-top: 3px solid;
 }
 
-.analisiAiBody p:last-child {
-  margin-bottom: 0;
-}
+.analisiBoxPro  { background: color-mix(in srgb, #22c55e 8%, var(--bg3)); border-color: #22c55e; }
+.analisiBoxCrit { background: color-mix(in srgb, #f97316 8%, var(--bg3)); border-color: #f97316; }
+.analisiBoxOpp  { background: color-mix(in srgb, var(--accent) 8%, var(--bg3)); border-color: var(--accent); }
 
-.analisiAiSezione {
-  font-size: 0.72rem;
+.analisiBoxTitle {
+  font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--text);
-  margin: 14px 0 6px;
+  margin-bottom: 10px;
 }
 
-.analisiAiSezione:first-child {
-  margin-top: 0;
+.analisiBoxPro  .analisiBoxTitle { color: #16a34a; }
+.analisiBoxCrit .analisiBoxTitle { color: #ea580c; }
+.analisiBoxOpp  .analisiBoxTitle { color: var(--accent); }
+
+.analisiBoxList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.analisiAiBullet {
-  font-size: 0.88rem;
-  line-height: 1.6;
+.analisiBoxList li {
+  font-size: 0.84rem;
   color: var(--text2);
-  padding-left: 4px;
-  margin-bottom: 4px;
+  line-height: 1.5;
+  padding-left: 12px;
+  position: relative;
+}
+
+.analisiBoxList li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--text3);
+}
+
+.analisiBoxActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.analisiBoxAction {
+  font-size: 0.84rem;
+  color: var(--text2);
+  line-height: 1.45;
+}
+
+.analisiBoxActionLabel {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  margin-bottom: 2px;
 }
 
 @media (max-width: 860px) {
   .kpiGrid { grid-template-columns: repeat(3, 1fr); }
   .chartsGrid { grid-template-columns: 1fr; }
+  .analisiAiBoxes { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 500px) {
